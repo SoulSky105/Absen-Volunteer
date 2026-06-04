@@ -217,7 +217,202 @@
   .leaflet-control-layers { background: var(--surface) !important; color: var(--text) !important; border-color: var(--border) !important; }
   .leaflet-control-layers-selector { accent-color: var(--accent); }
 
+  /* ===== TUTORIAL VISITOR GATE ===== */
+.visitor-gate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  overflow-y: auto;
+  gap: 24px;
+}
+
+.tutorial-header {
+  text-align: center;
+  max-width: 500px;
+}
+
+.tutorial-icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 12px rgba(45,212,232,0.4));
+}
+
+.tutorial-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  text-shadow: 0 0 16px rgba(45,212,232,0.3);
+}
+
+.tutorial-subtitle {
+  font-size: 13px;
+  color: var(--text2);
+  font-family: var(--sans);
+  line-height: 1.6;
+}
+
+.tutorial-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.t-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+
+.t-step:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+  transform: translateX(4px);
+}
+
+.t-step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #0ea5c4);
+  color: #000;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(45,212,232,0.3);
+}
+
+.t-step-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.t-step-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--mono);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.t-step-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.t-step-desc .highlight {
+  color: var(--accent);
+  font-weight: 600;
+  background: rgba(45,212,232,0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.tutorial-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(45,212,232,0.08);
+  border: 1px solid rgba(45,212,232,0.25);
+  border-radius: var(--radius);
+  max-width: 560px;
+  width: 100%;
+}
+
+.t-footer-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.t-footer-text {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.t-footer-text .highlight {
+  color: var(--accent);
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
+.tutorial-tips {
+  max-width: 560px;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.tips-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--amber);
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tips-list li {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.5;
+  padding-left: 16px;
+  position: relative;
+}
+
+.tips-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-size: 10px;
+}
+
   @media (max-width: 900px) {
+    .visitor-gate {
+    padding: 24px 16px;
+    gap: 18px;
+    }
+    .tutorial-icon { font-size: 44px; }
+    .tutorial-title { font-size: 18px; }
+    .tutorial-subtitle { font-size: 12px; }
+    .t-step { padding: 12px; gap: 10px; }
+    .t-step-num { width: 28px; height: 28px; font-size: 12px; }
+    .t-step-title { font-size: 11px; }
+    .t-step-desc { font-size: 11px; }
+    .tutorial-footer { padding: 12px 14px; }
+    .tutorial-tips { padding: 14px; }
     .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
     .sid-head { padding: 16px 16px 12px; }
@@ -259,6 +454,10 @@
     .map-radius-ctrl input[type="range"] { width: 80px; }
   }
   @media (max-width: 480px) {
+    .visitor-gate { padding: 16px 12px; gap: 14px; }
+    .tutorial-title { font-size: 16px; }
+    .t-step { padding: 10px; }
+    .tips-list li { font-size: 10px; }
     .stats { gap: 6px; }
     .stat-card { padding: 10px 8px; border-radius: var(--radius); }
     .stat-label { font-size: 8px; }
@@ -370,11 +569,63 @@
 
   <main class="main">
     <div class="visitor-gate" id="visitor-gate">
-      <div class="visitor-gate-icon">🔒</div>
-      <div class="visitor-gate-title">Mode Visitor</div>
-      <div class="visitor-gate-sub">Gunakan tab SCAN &amp; DAFTAR di sidebar untuk absensi.<br>Login sebagai admin untuk melihat log kehadiran &amp; pengaturan.</div>
-      <button class="btn-admin-login" onclick="toggleAdmin()">🔑 MASUK SEBAGAI ADMIN</button>
+  <div class="tutorial-header">
+    <div class="tutorial-icon"></div>
+    <div class="tutorial-title">PANDUAN PENDAFTARAN WAJAH</div>
+    <div class="tutorial-subtitle">Ikuti 4 langkah mudah di bawah ini untuk mulai absensi</div>
+  </div>
+
+  <div class="tutorial-steps">
+    <div class="t-step">
+      <div class="t-step-num">1</div>
+      <div class="t-step-content">
+        <div class="t-step-title">BUKA TAB DAFTAR</div>
+        <div class="t-step-desc">Klik tombol <span class="highlight">DAFTAR</span> di sidebar sebelah kiri atas.</div>
+      </div>
     </div>
+
+    <div class="t-step">
+      <div class="t-step-num">2</div>
+      <div class="t-step-content">
+        <div class="t-step-title">ISI DATA DIRI</div>
+        <div class="t-step-desc">Masukkan <span class="highlight">Nama Lengkap</span> dan pilih <span class="highlight">Divisi</span> Anda dari dropdown.</div>
+      </div>
+    </div>
+
+    <div class="t-step">
+      <div class="t-step-num">3</div>
+      <div class="t-step-content">
+        <div class="t-step-title">HADAPKAN WAJAH</div>
+        <div class="t-step-desc">Posisikan wajah di tengah kamera. Pastikan <span class="highlight">pencahayaan cukup</span> dan tidak <span class="highlight">backlight</span>. Tunggu hingga muncul tulisan <span class="highlight">✓ WAJAH TERDETEKSI</span>.</div>
+      </div>
+    </div>
+
+    <div class="t-step">
+      <div class="t-step-num">4</div>
+      <div class="t-step-content">
+        <div class="t-step-title">DAFTARKAN WAJAH</div>
+        <div class="t-step-desc">Klik tombol <span class="highlight">📸 AMBIL FOTO & DAFTARKAN</span>. Tunggu notifikasi sukses muncul.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tutorial-footer">
+    <div class="t-footer-icon">✨</div>
+    <div class="t-footer-text">
+      Setelah terdaftar, buka tab <span class="highlight">SCAN</span> dan hadapkan wajah untuk <strong>ABSENSI HARIAN</strong>.
+    </div>
+  </div>
+
+  <div class="tutorial-tips">
+    <div class="tips-title">💡 TIPS PENTING</div>
+    <ul class="tips-list">
+      <li>Lepaskan kacamata hitam / masker saat pendaftaran</li>
+      <li>Pastikan wajah terlihat jelas tanpa rambut menutupi</li>
+      <li>Gunakan pencahayaan yang cukup (hindari ruangan gelap)</li>
+      <li>Data wajah Anda aman dan hanya digunakan untuk absensi</li>
+    </ul>
+  </div>
+</div>
 
     <div id="admin-content" style="display:none;">
       <div class="topbar">
