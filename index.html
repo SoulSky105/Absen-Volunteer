@@ -474,25 +474,24 @@
     .map-modal-head-right { width: 100%; }
     .map-search { flex: 1; }
   }
-
- /* === VIDEO DI-MIRROR (SEPERTI CERMIN), CANVAS TIDAK === */
-
-/* Mirror video preview */
+  /* === PAKSA KAMERA MIRROR (SEPERTI CERMIN SELFIE) === */
 #video, 
-#video-reg {
-  transform: scaleX(-1) !important;
-  -webkit-transform: scaleX(-1) !important;
-  -moz-transform: scaleX(-1) !important;
-}
-
-/* Canvas tetap normal (tidak di-mirror) */
+#video-reg, 
 #overlay, 
 #overlay-reg {
-  transform: none !important;
-  -webkit-transform: none !important;
-  direction: ltr !important;
+  transform: scaleX(-1) !important;
+  -webkit-transform: scaleX(-1) !important;
 }
- 
+
+/* Style untuk notifikasi sudah absen (Warna Amber/Kuning) */
+.notif.duplicate { 
+  border-color: var(--amber); 
+  background: rgba(245,196,81,0.07); 
+}
+.notif.duplicate .notif-name { 
+  color: var(--amber); 
+}
+
 </style>
 </head>
 <body>
@@ -1491,12 +1490,28 @@ async function runDetection() {
       }
     }
 
-    if (bestDist < 0.52) {
+        if (bestDist < 0.52) {
       const confidence = Math.round((1 - bestDist) * 100);
+      
+      // === CEK: Apakah sudah absen hari ini? ===
+      const today = getLocalDate();
+      const alreadyCheckedIn = attendanceLog.some(log => log.id === bestMatch.id && log.date === today);
+
+      if (alreadyCheckedIn) {
+        // Tampilkan notifikasi khusus & beri cooldown agar tidak spam notifikasi
+        showDuplicateNotif(bestMatch.name);
+        setStatus('warn', `⚠️ ${bestMatch.name} sudah absen hari ini.`);
+        scanCooldown = true;
+        setTimeout(() => { scanCooldown = false; }, 5000); // Cooldown 5 detik
+        return; // Hentikan proses, jangan simpan lagi
+      }
+
+      // Jika belum absen, lanjutkan proses normal
       ctx.fillStyle = 'rgba(45,212,232,0.12)';
       ctx.fillRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
       ctx.fillStyle = '#2DD4E8'; ctx.font = 'bold 13px Space Mono, monospace';
       ctx.fillText(bestMatch.name, det.detection.box.x, det.detection.box.y - 8);
+      
       recordAttendance(bestMatch, confidence);
       setStatus('ok', `✓ ${bestMatch.name} dikenali (${confidence}%)`);
     } else {
@@ -1580,13 +1595,12 @@ function showNotif(name, status, conf, time) {
   setTimeout(() => { n.classList.remove('show'); }, 6000);
 }
 
-function showUnknown() {
-  scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 3000);
+function showDuplicateNotif(name) {
   const n = document.getElementById('notif');
-  n.className = 'notif show unknown';
-  document.getElementById('notif-name').textContent = 'TIDAK DIKENAL';
-  document.getElementById('notif-status').textContent = 'Wajah tidak ada di database';
-  document.getElementById('notif-time').textContent = formatTime(new Date());
+  n.className = 'notif show duplicate';
+  document.getElementById('notif-name').textContent = name;
+  document.getElementById('notif-status').textContent = 'SUDAH ABSEN HARI INI';
+  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
   setTimeout(() => { n.classList.remove('show'); }, 4000);
 }
 
