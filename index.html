@@ -1490,29 +1490,51 @@ async function runDetection() {
       }
     }
 
-        if (bestDist < 0.52) {
+            if (bestDist < 0.52) {
       const confidence = Math.round((1 - bestDist) * 100);
       
-      // === CEK: Apakah sudah absen hari ini? ===
-      const today = getLocalDate();
-      const alreadyCheckedIn = attendanceLog.some(log => log.id === bestMatch.id && log.date === today);
-
-      if (alreadyCheckedIn) {
-        // Tampilkan notifikasi khusus & beri cooldown agar tidak spam notifikasi
-        showDuplicateNotif(bestMatch.name);
-        setStatus('warn', `⚠️ ${bestMatch.name} sudah absen hari ini.`);
-        scanCooldown = true;
-        setTimeout(() => { scanCooldown = false; }, 5000); // Cooldown 5 detik
-        return; // Hentikan proses, jangan simpan lagi
+      // === HITUNG STATUS BARU SEBELUM MENYIMPAN ===
+      let newStatus = 'TIDAK HADIR';
+      if (currentPos) {
+        if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+          const dist = distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng);
+          newStatus = dist <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
+        } else {
+          newStatus = 'HADIR'; // Fallback jika geofence belum di-set
+        }
       }
 
-      // Jika belum absen, lanjutkan proses normal
+      // === CEK LOGIKA ANTI-SPAM & UPDATE STATUS ===
+      const today = getLocalDate();
+      const existingLog = attendanceLog.find(log => log.id === bestMatch.id && log.date === today);
+
+      if (existingLog) {
+        // Kasus 1: Sudah HADIR, scan lagi -> TOLAK
+        if (existingLog.status === 'HADIR') {
+          showDuplicateNotif(bestMatch.name, false);
+          setStatus('warn', `⚠️ ${bestMatch.name} sudah absen (HADIR) hari ini.`);
+          scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
+          return; 
+        }
+        
+        // Kasus 2: Sebelumnya TIDAK HADIR, sekarang tetap TIDAK HADIR -> TOLAK
+        if (existingLog.status === 'TIDAK HADIR' && newStatus === 'TIDAK HADIR') {
+          showDuplicateNotif(bestMatch.name, true);
+          setStatus('warn', `️ ${bestMatch.name} sudah absen (Di Luar Area).`);
+          scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
+          return;
+        }
+        
+        // Kasus 3: Sebelumnya TIDAK HADIR, sekarang HADIR -> IZINKAN (Akan di-update di recordAttendance)
+      }
+
+      // Jika lolos pengecekan, lanjutkan proses absen/update
       ctx.fillStyle = 'rgba(45,212,232,0.12)';
       ctx.fillRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
       ctx.fillStyle = '#2DD4E8'; ctx.font = 'bold 13px Space Mono, monospace';
       ctx.fillText(bestMatch.name, det.detection.box.x, det.detection.box.y - 8);
       
-      recordAttendance(bestMatch, confidence);
+      recordAttendance(bestMatch, confidence, newStatus); // Kirim newStatus ke fungsi
       setStatus('ok', `✓ ${bestMatch.name} dikenali (${confidence}%)`);
     } else {
       ctx.strokeStyle = '#FF4D6A';
@@ -1525,7 +1547,7 @@ async function runDetection() {
 }
 
 // ─── Attendance ───────────────────────────────────────────────────────────────
-async function recordAttendance(person, confidence) {
+async function recordAttendance(person, confidence, newStatus) {
   scanCooldown = true;
   setTimeout(() => { scanCooldown = false; }, 5000);
   await refreshGPS();
@@ -1534,27 +1556,13 @@ async function recordAttendance(person, confidence) {
   const todayStr = getLocalDate(now);
 
   let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
-  let status = 'TIDAK HADIR'; // Default aman: TIDAK HADIR
+  let status = newStatus || 'TIDAK HADIR';
 
   if (currentPos) {
     lat = currentPos.lat;
     lng = currentPos.lng;
     accuracy = currentPos.accuracy;
     mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
-
-    // === PERBAIKAN: Validasi ketat apakah geofence sudah di-set dengan benar ===
-    const isGeofenceValid = 
-      geofence.centerLat !== null && geofence.centerLat !== undefined && geofence.centerLat !== '' && !isNaN(geofence.centerLat) &&
-      geofence.centerLng !== null && geofence.centerLng !== undefined && geofence.centerLng !== '' && !isNaN(geofence.centerLng);
-
-    if (isGeofenceValid) {
-      distance = Math.round(distanceMeters(lat, lng, geofence.centerLat, geofence.centerLng));
-      // Logika inti: Jika jarak <= radius, HADIR. Jika > radius, TIDAK HADIR.
-      status = distance <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
-    } else {
-      // Fallback HANYA jika Admin benar-benar belum mengatur geofence sama sekali
-      status = 'HADIR'; 
-    }
   }
 
   const entry = {
@@ -1566,14 +1574,24 @@ async function recordAttendance(person, confidence) {
     status,
     confidence,
     ts: now.getTime(),
-    lat,
-    lng,
-    accuracy,
-    distance,
-    mapsLink
+    lat, lng, accuracy, distance, mapsLink
   };
 
-  attendanceLog.unshift(entry);
+  // === LOGIKA UPDATE LOKAL ===
+  const existingIndex = attendanceLog.findIndex(log => log.id === person.id && log.date === todayStr);
+  
+  if (existingIndex !== -1) {
+    // Update data yang sudah ada (kasus: Tidak Hadir -> Hadir)
+    attendanceLog[existingIndex] = { ...entry };
+    showToast(`✓ Status ${person.name} di-update menjadi HADIR!`, 'success');
+  } else {
+    // Tambah data baru
+    attendanceLog.unshift(entry);
+  }
+  
+  // Sort agar yang terbaru selalu di atas
+  attendanceLog.sort((a, b) => b.ts - a.ts);
+
   localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
   showNotif(person.name, status, confidence, now);
   renderLog();
@@ -1595,12 +1613,19 @@ function showNotif(name, status, conf, time) {
   setTimeout(() => { n.classList.remove('show'); }, 6000);
 }
 
-function showDuplicateNotif(name) {
+function showDuplicateNotif(name, isOutsideZone = false) {
   const n = document.getElementById('notif');
   n.className = 'notif show duplicate';
   document.getElementById('notif-name').textContent = name;
-  document.getElementById('notif-status').textContent = 'SUDAH ABSEN HARI INI';
-  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
+  
+  if (isOutsideZone) {
+    document.getElementById('notif-status').textContent = 'SUDAH ABSEN (DI LUAR AREA)';
+    document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Masuk ke zona untuk update status';
+  } else {
+    document.getElementById('notif-status').textContent = 'SUDAH ABSEN HARI INI';
+    document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
+  }
+  
   setTimeout(() => { n.classList.remove('show'); }, 4000);
 }
 
