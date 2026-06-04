@@ -280,7 +280,7 @@
 <body>
 
 <div id="loading">
-  <div style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#2DD4E8;letter-spacing:0.16em;text-shadow:0 0 26px rgba(45,212,232,0.7);">VOLUNTEER</div>
+  <div style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#2DD4E8;letter-spacing:0.16em;text-shadow:0 0 26px rgba(45,212,232,0.7);">ABSENSI VOLUNTEER</div>
   <div style="font-family:'Space Mono',monospace;font-size:10px;color:#8EA6BE;letter-spacing:0.24em;margin-top:-8px;">GREBEG SURO PONOROGO 2026</div>
   <div class="load-text" id="load-msg">MEMUAT MODEL AI...</div>
   <div class="load-bar"><div class="load-fill" id="load-fill"></div></div>
@@ -481,7 +481,8 @@
 
 <script>
 const SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsvJ3iVt2UmAvE0nOSGECftj4-AYpW-ZhIeUdKLtXauGqunWAhBobbrpfa4uVk1n_4ng/exec';
-const ADMIN_PASS = '0354AMGS';
+const ADMIN_PASS = 'GS26JAYA';
+const API_SECRET = '0345AMGS@^';
 
 let faceDb = [];
 let attendanceLog = [];
@@ -513,6 +514,10 @@ const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/
   attribution: 'Tiles &copy; Esri',
   maxZoom: 19
 });
+
+function getAuthPayload(data = {}) {
+  return { ...data, token: API_SECRET };
+}
 
 const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -646,7 +651,11 @@ function startAutoRefresh() {
 async function refreshFromSheets() {
   setSyncStatus(false, 'MENYINKRONKAN DATABASE...');
   try {
-    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getPersons', { redirect: 'follow' });
+    const url = new URL(SHEETS_SCRIPT_URL);
+    url.searchParams.append('action', 'getPersons');
+    url.searchParams.append('token', API_SECRET); // Tambahan Token
+    
+    const res = await fetch(url.toString(), { redirect: 'follow' });
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.persons)) {
       faceDb = json.persons;
@@ -673,7 +682,11 @@ async function refreshAttendance() {
   isRefreshingAttendance = true;
   const today = getLocalDate();
   try {
-    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getAttendance', { redirect: 'follow' });
+    const url = new URL(SHEETS_SCRIPT_URL);
+    url.searchParams.append('action', 'getAttendance');
+    url.searchParams.append('token', API_SECRET); // Tambahan Token
+
+    const res = await fetch(url.toString(), { redirect: 'follow' });
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.logs)) {
       let serverLogs = json.logs.map(log => {
@@ -713,7 +726,7 @@ async function sendToSheets(entry) {
     await fetch(SHEETS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'absensi', ...entry })
+      body: JSON.stringify(getAuthPayload({ action: 'absensi', ...entry })) // Pakai helper
     });
   } catch(e) { console.warn('Sheets send error:', e); }
 }
@@ -723,7 +736,7 @@ async function sendPersonToSheets(person) {
     await fetch(SHEETS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'addPerson', ...person })
+      body: JSON.stringify(getAuthPayload({ action: 'addPerson', ...person })) // Pakai helper
     });
   } catch(e) { console.warn('Sheets sync error:', e); }
 }
@@ -781,14 +794,13 @@ async function saveGeofence() {
   }
   geofence = { centerLat: lat, centerLng: lng, radiusM: radius };
   updateGeofenceBadge();
-  document.getElementById('geo-status').textContent =
-    `Aktif: (${lat.toFixed(5)}, ${lng.toFixed(5)}) — radius ${radius} m`;
+  document.getElementById('geo-status').textContent = `Aktif: (${lat.toFixed(5)}, ${lng.toFixed(5)}) — radius ${radius} m`;
 
   try {
     await fetch(SHEETS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'setGeofence', centerLat: lat, centerLng: lng, radiusM: radius })
+      body: JSON.stringify(getAuthPayload({ action: 'setGeofence', centerLat: lat, centerLng: lng, radiusM: radius }))
     });
     showToast('Geofence tersimpan ke Sheets!', 'success');
   } catch(e) {
@@ -797,20 +809,20 @@ async function saveGeofence() {
 }
 
 async function deleteGeofence() {
-  if (!confirm('Hapus koordinat geofence? Status absensi akan kembali HADIR otomatis (tanpa cek radius).')) return;
+  if (!confirm('Hapus koordinat geofence?')) return;
   geofence = { centerLat: null, centerLng: null, radiusM: 100 };
   document.getElementById('geo-lat').value = '';
   document.getElementById('geo-lng').value = '';
   document.getElementById('geo-radius').value = 100;
   updateGeofenceBadge();
-  document.getElementById('geo-status').textContent = 'Geofence dihapus. Belum ada konfigurasi — isi koordinat pusat dan simpan.';
+  document.getElementById('geo-status').textContent = 'Geofence dihapus.';
   clearPreviewMap();
 
   try {
     await fetch(SHEETS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'deleteGeofence' })
+      body: JSON.stringify(getAuthPayload({ action: 'deleteGeofence' }))
     });
     showToast('Koordinat geofence dihapus dari Sheets.', 'success');
   } catch(e) {
@@ -820,20 +832,20 @@ async function deleteGeofence() {
 
 async function getGeofenceFromSheets() {
   try {
-    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getGeofence', { redirect: 'follow' });
+    const url = new URL(SHEETS_SCRIPT_URL);
+    url.searchParams.append('action', 'getGeofence');
+    url.searchParams.append('token', API_SECRET); // Tambahan Token
+
+    const res = await fetch(url.toString(), { redirect: 'follow' });
     const json = await res.json();
     if (json.status === 'ok' && json.geofence) {
       const g = json.geofence;
-      
-      // Validasi ketat: pastikan bukan null, bukan string kosong, dan adalah angka
       if (g.centerLat !== null && g.centerLng !== null && !isNaN(g.centerLat) && !isNaN(g.centerLng)) {
         geofence = { 
           centerLat: parseFloat(g.centerLat), 
           centerLng: parseFloat(g.centerLng), 
           radiusM: parseInt(g.radiusM) || 100 
         };
-        
-        // Update UI hanya jika sedang dalam mode admin
         if (mode === 'admin') {
           document.getElementById('geo-lat').value = geofence.centerLat;
           document.getElementById('geo-lng').value = geofence.centerLng;
