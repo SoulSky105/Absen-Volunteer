@@ -6,6 +6,9 @@
 <title>VOLUNTEER — Grebeg Suro Ponorogo 2026</title>
 <script defer src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<!-- Leaflet CSS & JS (Gratis, Tanpa API Key) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -156,6 +159,8 @@
   .geofence-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .btn-geo-loc { padding: 9px 16px; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
   .btn-geo-loc:hover { border-color: var(--accent); color: var(--accent); background: rgba(45,212,232,.08); }
+  .btn-geo-map { padding: 9px 16px; background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-geo-map:hover { background: rgba(45,212,232,.15); }
   .btn-geo-save { padding: 9px 20px; background: var(--accent); color: #000; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; border: none; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
   .btn-geo-save:hover { background: #67E8F9; }
   .btn-geo-del { padding: 9px 16px; background: transparent; border: 1px solid rgba(255,77,106,.3); color: var(--red); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
@@ -165,6 +170,52 @@
   .loc-link { color: var(--accent); text-decoration: none; font-size: 12px; white-space: nowrap; }
   .loc-link:hover { text-decoration: underline; }
   .loc-none { color: var(--text3); font-size: 12px; }
+
+  /* Mini preview map di panel geofence */
+  .geo-preview-map { width: 100%; height: 200px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 14px; background: var(--surface2); overflow: hidden; position: relative; }
+  .geo-preview-map.empty { display: flex; align-items: center; justify-content: center; color: var(--text3); font-size: 11px; font-family: var(--mono); }
+
+  /* ===== MAP PICKER MODAL ===== */
+  .map-modal { position: fixed; inset: 0; background: rgba(5,11,24,0.92); backdrop-filter: blur(8px); z-index: 10000; display: none; flex-direction: column; padding: 16px; }
+  .map-modal.show { display: flex; }
+  .map-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+  .map-modal-title { font-size: 14px; font-weight: 700; font-family: var(--mono); color: var(--accent); letter-spacing: 0.08em; }
+  .map-modal-sub { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+  .map-modal-head-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .map-search { padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 12px; outline: none; min-width: 200px; transition: border .2s; }
+  .map-search:focus { border-color: var(--accent); }
+  .map-search::placeholder { color: var(--text3); }
+  .btn-map-action { padding: 8px 14px; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; border-radius: 8px; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .btn-map-action:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-map-action.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-map-action.primary:hover { background: #67E8F9; }
+  .btn-map-close { background: transparent; border: 1px solid rgba(255,77,106,.3); color: var(--red); font-size: 18px; padding: 4px 10px; border-radius: 8px; cursor: pointer; transition: all .2s; line-height: 1; }
+  .btn-map-close:hover { background: rgba(255,77,106,.15); }
+  .map-container { flex: 1; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); position: relative; background: #000; }
+  #picker-map { width: 100%; height: 100%; }
+  .map-info-bar { position: absolute; bottom: 16px; left: 16px; right: 16px; background: rgba(11,20,38,0.95); backdrop-filter: blur(8px); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; z-index: 500; font-family: var(--mono); font-size: 11px; color: var(--text2); }
+  .map-info-bar .coord { color: var(--accent); font-weight: 700; }
+  .map-info-bar .sep { color: var(--text3); }
+  .map-radius-ctrl { display: flex; align-items: center; gap: 8px; }
+  .map-radius-ctrl input[type="range"] { width: 120px; accent-color: var(--accent); }
+  .map-radius-ctrl .radius-val { color: var(--accent); font-weight: 700; min-width: 50px; }
+  .search-results { position: absolute; top: 12px; left: 12px; right: 12px; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); max-height: 240px; overflow-y: auto; z-index: 600; display: none; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .search-results.show { display: block; }
+  .search-item { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 12px; color: var(--text2); transition: background .15s; }
+  .search-item:last-child { border-bottom: none; }
+  .search-item:hover { background: rgba(45,212,232,0.08); color: var(--accent); }
+  .search-item .s-name { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .search-item .s-addr { font-size: 10px; color: var(--text3); }
+  .search-loading { padding: 12px; text-align: center; color: var(--text3); font-size: 11px; font-family: var(--mono); }
+
+  /* Dark theme untuk Leaflet */
+  .leaflet-container { background: #0A2238 !important; }
+  .leaflet-control-zoom a { background: var(--surface) !important; color: var(--accent) !important; border-color: var(--border) !important; }
+  .leaflet-control-zoom a:hover { background: var(--surface2) !important; }
+  .leaflet-control-attribution { background: rgba(11,20,38,0.8) !important; color: var(--text3) !important; font-size: 9px !important; }
+  .leaflet-control-attribution a { color: var(--accent) !important; }
+  .leaflet-control-layers { background: var(--surface) !important; color: var(--text) !important; border-color: var(--border) !important; }
+  .leaflet-control-layers-selector { accent-color: var(--accent); }
 
   @media (max-width: 900px) {
     .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
@@ -201,6 +252,11 @@
     #toast { bottom: 12px; right: 12px; left: 12px; font-size: 12px; text-align: center; }
     .geofence-grid { grid-template-columns: 1fr 1fr; }
     .geofence-panel { padding: 14px; }
+    .map-modal { padding: 8px; }
+    .map-modal-head { padding: 10px 12px; }
+    .map-search { min-width: 140px; font-size: 11px; }
+    .map-info-bar { bottom: 8px; left: 8px; right: 8px; padding: 8px 10px; font-size: 10px; gap: 8px; }
+    .map-radius-ctrl input[type="range"] { width: 80px; }
   }
   @media (max-width: 480px) {
     .stats { gap: 6px; }
@@ -216,6 +272,8 @@
     th { padding: 6px 8px; }
     td { padding: 8px; font-size: 11px; }
     .geofence-grid { grid-template-columns: 1fr; }
+    .map-modal-head-right { width: 100%; }
+    .map-search { flex: 1; }
   }
 </style>
 </head>
@@ -356,6 +414,12 @@
           <div class="geofence-panel-title">Setting Geofence</div>
           <div class="geo-active-badge off" id="geo-active-badge">BELUM DI-SET</div>
         </div>
+
+        <!-- Mini preview map -->
+        <div class="geo-preview-map empty" id="geo-preview-map">
+          Klik "PILIH DI PETA" untuk melihat lokasi
+        </div>
+
         <div class="geofence-grid">
           <div class="geofence-field">
             <label>LATITUDE PUSAT</label>
@@ -371,7 +435,8 @@
           </div>
         </div>
         <div class="geofence-actions">
-          <button class="btn-geo-loc" onclick="useMyLocation()">📍 GUNAKAN LOKASI SAYA</button>
+          <button class="btn-geo-map" onclick="openMapPicker()">🗺️ PILIH DI PETA</button>
+          <button class="btn-geo-loc" onclick="useMyLocation()">📍 LOKASI SAYA</button>
           <button class="btn-geo-save" onclick="saveGeofence()">SIMPAN</button>
           <button class="btn-geo-del" id="btn-geo-del" onclick="deleteGeofence()">🗑 HAPUS</button>
         </div>
@@ -379,6 +444,37 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- ===== MAP PICKER MODAL ===== -->
+<div class="map-modal" id="map-modal">
+  <div class="map-modal-head">
+    <div>
+      <div class="map-modal-title">🗺️ PILIH TITIK GEOFENCE</div>
+      <div class="map-modal-sub">Klik di peta untuk set titik · Geser slider untuk atur radius</div>
+    </div>
+    <div class="map-modal-head-right">
+      <input type="text" class="map-search" id="map-search" placeholder="🔍 Cari lokasi (cth: Alun-Alun Ponorogo)" autocomplete="off">
+      <button class="btn-map-action" onclick="mapUseMyLocation()">📍 LOKASI SAYA</button>
+      <button class="btn-map-action primary" onclick="confirmMapPick()">✓ PAKAI INI</button>
+      <button class="btn-map-close" onclick="closeMapPicker()">✕</button>
+    </div>
+  </div>
+  <div class="map-container">
+    <div id="picker-map"></div>
+    <div class="search-results" id="search-results"></div>
+    <div class="map-info-bar">
+      <div>📍 LAT: <span class="coord" id="map-info-lat">-</span></div>
+      <div class="sep">|</div>
+      <div>LNG: <span class="coord" id="map-info-lng">-</span></div>
+      <div class="sep">|</div>
+      <div class="map-radius-ctrl">
+        <span>⭕ RADIUS:</span>
+        <input type="range" id="map-radius-slider" min="10" max="2000" step="10" value="100">
+        <span class="radius-val" id="map-radius-val">100 m</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -396,25 +492,40 @@ let detectionInterval = null;
 let scanCooldown = false;
 let regPreviewInterval = null;
 
-// GPS state
 let currentPos = null;
 let geofence = { centerLat: null, centerLng: null, radiusM: 100 };
 let mode = 'visitor';
 
-// Auto-refresh state
 let attendanceRefreshInterval = null;
 let isRefreshingAttendance = false;
 
-// ─── Utilities ───────────────────────────────────────────────────────────────
+// ===== MAP PICKER STATE =====
+let pickerMap = null;
+let pickerMarker = null;
+let pickerCircle = null;
+let pickerSearchTimer = null;
+let previewMap = null;
+let previewMarker = null;
+let previewCircle = null;
 
-// Format tanggal lokal YYYY-MM-DD (Bebas bug zona waktu / ISO String)
+// Layer peta (Gratis, Tanpa API Key)
+const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri',
+  maxZoom: 19
+});
+
+const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  maxZoom: 19
+});
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
 function getLocalDate(d = new Date()) {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-
 function formatDate(d) {
   const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
@@ -437,7 +548,6 @@ function setSyncStatus(online, text) {
   else badge.classList.add('offline');
 }
 
-// ─── Haversine ───────────────────────────────────────────────────────────────
 function distanceMeters(lat1, lng1, lat2, lng2) {
   const R = 6371000;
   const toRad = x => x * Math.PI / 180;
@@ -491,7 +601,6 @@ function refreshGPS() {
 // ─── Model Loading ────────────────────────────────────────────────────────────
 async function loadModels() {
   initGeolocation();
-
   const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
   const steps = [
     { fn: () => faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL), label: 'MEMUAT DETEKTOR...', pct: 15 },
@@ -518,26 +627,14 @@ async function loadModels() {
   await new Promise(r => setTimeout(r, 300));
   document.getElementById('loading').classList.add('hide');
   initCameras();
-  
-  // Mulai auto-refresh agar log tersinkron real-time antar device
   startAutoRefresh();
 }
 
-// ─── Auto Refresh (Real-time Sync) ───────────────────────────────────────────
 function startAutoRefresh() {
   if (attendanceRefreshInterval) clearInterval(attendanceRefreshInterval);
   attendanceRefreshInterval = setInterval(() => {
-    if (mode === 'admin') {
-      refreshAttendance();
-    }
-  }, 5000); // Refresh setiap 5 detik
-}
-
-function stopAutoRefresh() {
-  if (attendanceRefreshInterval) {
-    clearInterval(attendanceRefreshInterval);
-    attendanceRefreshInterval = null;
-  }
+    if (mode === 'admin') refreshAttendance();
+  }, 5000);
 }
 
 // ─── Sheets Sync ─────────────────────────────────────────────────────────────
@@ -567,15 +664,13 @@ async function refreshFromSheets() {
 }
 
 async function refreshAttendance() {
-  if (isRefreshingAttendance) return; // Cegah request bertumpuk
+  if (isRefreshingAttendance) return;
   isRefreshingAttendance = true;
-  
   const today = getLocalDate();
   try {
     const res = await fetch(SHEETS_SCRIPT_URL + '?action=getAttendance', { redirect: 'follow' });
     const json = await res.json();
     if (json.status === 'ok' && Array.isArray(json.logs)) {
-      // Normalisasi format tanggal dari server (mengatasi konversi otomatis Date object Apps Script)
       let serverLogs = json.logs.map(log => {
         if (log.date && typeof log.date === 'string' && log.date.includes('T')) {
           log.date = getLocalDate(new Date(log.date));
@@ -585,23 +680,17 @@ async function refreshAttendance() {
         return log;
       }).filter(log => log.date === today);
 
-      // Optimistic UI: Pertahankan log lokal yang baru saja diabsen (< 15 detik) 
-      // agar tidak berkedip (flicker) saat menunggu server menyimpan data.
       const nowTs = Date.now();
       const pendingLocal = attendanceLog.filter(localLog => 
         (nowTs - localLog.ts < 15000) && 
         !serverLogs.some(sLog => String(sLog.ts) === String(localLog.ts))
       );
-      
       attendanceLog = [...pendingLocal, ...serverLogs].sort((a, b) => b.ts - a.ts);
-      
       localStorage.setItem('attlog', JSON.stringify(attendanceLog));
       renderLog();
       updateStats();
       return true;
-    } else {
-      throw new Error('Response tidak valid');
-    }
+    } else throw new Error('Response tidak valid');
   } catch(e) {
     console.warn('Attendance fetch error:', e);
     const cached = JSON.parse(localStorage.getItem('attlog') || '[]');
@@ -636,19 +725,14 @@ async function sendPersonToSheets(person) {
 
 // ─── Admin Mode ───────────────────────────────────────────────────────────────
 function toggleAdmin() {
-  if (mode === 'admin') {
-    exitAdmin();
-  } else {
+  if (mode === 'admin') exitAdmin();
+  else {
     const pass = prompt('Masukkan password admin:');
     if (pass === null) return;
-    if (pass === ADMIN_PASS) {
-      enterAdmin();
-    } else {
-      showToast('Password salah!', 'error');
-    }
+    if (pass === ADMIN_PASS) enterAdmin();
+    else showToast('Password salah!', 'error');
   }
 }
-
 function enterAdmin() {
   mode = 'admin';
   updateAdminUI();
@@ -656,13 +740,11 @@ function enterAdmin() {
   refreshAttendance();
   showToast('Mode Admin aktif', 'success');
 }
-
 function exitAdmin() {
   mode = 'visitor';
   updateAdminUI();
   showToast('Keluar dari mode Admin', '');
 }
-
 function updateAdminUI() {
   const isAdmin = mode === 'admin';
   document.getElementById('visitor-gate').style.display = isAdmin ? 'none' : 'flex';
@@ -681,6 +763,7 @@ function useMyLocation() {
   }
   document.getElementById('geo-lat').value = currentPos.lat.toFixed(7);
   document.getElementById('geo-lng').value = currentPos.lng.toFixed(7);
+  updatePreviewMap();
 }
 
 async function saveGeofence() {
@@ -716,6 +799,7 @@ async function deleteGeofence() {
   document.getElementById('geo-radius').value = 100;
   updateGeofenceBadge();
   document.getElementById('geo-status').textContent = 'Geofence dihapus. Belum ada konfigurasi — isi koordinat pusat dan simpan.';
+  clearPreviewMap();
 
   try {
     await fetch(SHEETS_SCRIPT_URL, {
@@ -743,6 +827,7 @@ async function getGeofenceFromSheets() {
         document.getElementById('geo-status').textContent =
           `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m`;
         updateGeofenceBadge();
+        updatePreviewMap();
       }
     }
   } catch(e) {
@@ -761,7 +846,258 @@ function updateGeofenceBadge() {
   }
 }
 
-// ─── Camera ───────────────────────────────────────────────────────────────────
+// ─── Mini Preview Map ────────────────────────────────────────────────────────
+function updatePreviewMap() {
+  const lat = parseFloat(document.getElementById('geo-lat').value);
+  const lng = parseFloat(document.getElementById('geo-lng').value);
+  const radius = parseInt(document.getElementById('geo-radius').value) || 100;
+  const container = document.getElementById('geo-preview-map');
+
+  if (isNaN(lat) || isNaN(lng)) {
+    clearPreviewMap();
+    return;
+  }
+
+  container.classList.remove('empty');
+  container.innerHTML = '';
+
+  if (!previewMap) {
+    previewMap = L.map(container, { zoomControl: true, attributionControl: false, layers: [satelliteLayer] }).setView([lat, lng], 17);
+    setTimeout(() => previewMap.invalidateSize(), 100);
+  } else {
+    setTimeout(() => previewMap.invalidateSize(), 50);
+  }
+
+  if (previewMarker) previewMap.removeLayer(previewMarker);
+  if (previewCircle) previewMap.removeLayer(previewCircle);
+
+  previewMarker = L.marker([lat, lng]).addTo(previewMap)
+    .bindPopup(`<b>Titik Pusat</b><br>Radius: ${radius} m`).openPopup();
+  previewCircle = L.circle([lat, lng], {
+    radius: radius,
+    color: '#2DD4E8',
+    fillColor: '#2DD4E8',
+    fillOpacity: 0.15,
+    weight: 2
+  }).addTo(previewMap);
+
+  previewMap.setView([lat, lng], previewMap.getZoom() < 15 ? 17 : previewMap.getZoom());
+}
+
+function clearPreviewMap() {
+  const container = document.getElementById('geo-preview-map');
+  container.classList.add('empty');
+  container.innerHTML = 'Klik "PILIH DI PETA" untuk melihat lokasi';
+  if (previewMap) {
+    previewMap.remove();
+    previewMap = null;
+    previewMarker = null;
+    previewCircle = null;
+  }
+}
+
+['geo-lat', 'geo-lng', 'geo-radius'].forEach(id => {
+  document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === id) updatePreviewMap();
+  });
+});
+
+// ─── Map Picker Modal ────────────────────────────────────────────────────────
+function openMapPicker() {
+  const modal = document.getElementById('map-modal');
+  modal.classList.add('show');
+
+  const lat = parseFloat(document.getElementById('geo-lat').value) || (currentPos ? currentPos.lat : -7.8667);
+  const lng = parseFloat(document.getElementById('geo-lng').value) || (currentPos ? currentPos.lng : 111.4667);
+  const radius = parseInt(document.getElementById('geo-radius').value) || 100;
+
+  document.getElementById('map-radius-slider').value = radius;
+  document.getElementById('map-radius-val').textContent = radius + ' m';
+
+  setTimeout(() => {
+    if (pickerMap) {
+      pickerMap.invalidateSize();
+      pickerMap.setView([lat, lng], 17);
+      updatePickerMarker(lat, lng, radius);
+    } else {
+      initPickerMap(lat, lng, radius);
+    }
+  }, 100);
+}
+
+function initPickerMap(lat, lng, radius) {
+  pickerMap = L.map('picker-map', { 
+    zoomControl: true, 
+    layers: [satelliteLayer] // Default ke Satelit agar lebih detail
+  }).setView([lat, lng], 17);
+
+  // Tambahkan kontrol untuk ganti antara Satelit dan Peta Jalan
+  const baseMaps = {
+    "🛰️ Satelit (Detail)": satelliteLayer,
+    "🗺️ Peta Jalan": streetLayer
+  };
+  L.control.layers(baseMaps, null, { position: 'topright' }).addTo(pickerMap);
+
+  updatePickerMarker(lat, lng, radius);
+
+  pickerMap.on('click', (e) => {
+    const r = parseInt(document.getElementById('map-radius-slider').value) || 100;
+    updatePickerMarker(e.latlng.lat, e.latlng.lng, r);
+  });
+
+  document.getElementById('map-radius-slider').addEventListener('input', (e) => {
+    const r = parseInt(e.target.value);
+    document.getElementById('map-radius-val').textContent = r + ' m';
+    if (pickerMarker) {
+      const pos = pickerMarker.getLatLng();
+      updatePickerMarker(pos.lat, pos.lng, r);
+    }
+  });
+
+  setTimeout(() => pickerMap.invalidateSize(), 200);
+}
+
+function updatePickerMarker(lat, lng, radius) {
+  document.getElementById('map-info-lat').textContent = lat.toFixed(7);
+  document.getElementById('map-info-lng').textContent = lng.toFixed(7);
+
+  if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+  if (pickerCircle) pickerMap.removeLayer(pickerCircle);
+
+  pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap)
+    .bindPopup(`<b>Titik Pusat</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}<br>Radius: ${radius} m`)
+    .openPopup();
+
+  pickerCircle = L.circle([lat, lng], {
+    radius: radius,
+    color: '#2DD4E8',
+    fillColor: '#2DD4E8',
+    fillOpacity: 0.18,
+    weight: 2
+  }).addTo(pickerMap);
+
+  pickerMarker.on('drag', (e) => {
+    const pos = e.target.getLatLng();
+    const r = parseInt(document.getElementById('map-radius-slider').value) || 100;
+    document.getElementById('map-info-lat').textContent = pos.lat.toFixed(7);
+    document.getElementById('map-info-lng').textContent = pos.lng.toFixed(7);
+    pickerCircle.setLatLng(pos);
+  });
+}
+
+function closeMapPicker() {
+  document.getElementById('map-modal').classList.remove('show');
+  document.getElementById('search-results').classList.remove('show');
+  document.getElementById('map-search').value = '';
+}
+
+function confirmMapPick() {
+  const lat = parseFloat(document.getElementById('map-info-lat').textContent);
+  const lng = parseFloat(document.getElementById('map-info-lng').textContent);
+  const radius = parseInt(document.getElementById('map-radius-slider').value);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    showToast('Klik di peta terlebih dahulu untuk memilih titik!', 'error');
+    return;
+  }
+
+  document.getElementById('geo-lat').value = lat.toFixed(7);
+  document.getElementById('geo-lng').value = lng.toFixed(7);
+  document.getElementById('geo-radius').value = radius;
+
+  closeMapPicker();
+  updatePreviewMap();
+  showToast(`✓ Koordinat dipilih: ${lat.toFixed(5)}, ${lng.toFixed(5)}`, 'success');
+}
+
+function mapUseMyLocation() {
+  if (!navigator.geolocation) {
+    showToast('GPS tidak tersedia', 'error');
+    return;
+  }
+  showToast('Mencari lokasi Anda...', '');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const r = parseInt(document.getElementById('map-radius-slider').value) || 100;
+      if (pickerMap) pickerMap.setView([lat, lng], 17);
+      updatePickerMarker(lat, lng, r);
+      showToast('✓ Lokasi ditemukan', 'success');
+    },
+    (err) => showToast('Gagal mendapatkan lokasi: ' + err.message, 'error'),
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ─── Search Location via Nominatim (Gratis) ──────────────────────────────────
+const searchInput = document.getElementById('map-search');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', (e) => {
+  const q = e.target.value.trim();
+  if (pickerSearchTimer) clearTimeout(pickerSearchTimer);
+  if (q.length < 3) {
+    searchResults.classList.remove('show');
+    return;
+  }
+  pickerSearchTimer = setTimeout(() => searchLocation(q), 500);
+});
+
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const q = e.target.value.trim();
+    if (q.length >= 3) searchLocation(q);
+  }
+});
+
+async function searchLocation(query) {
+  searchResults.innerHTML = '<div class="search-loading">🔍 Mencari...</div>';
+  searchResults.classList.add('show');
+
+  try {
+    // Fokus pencarian ke Indonesia agar hasil lebih relevan
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5&addressdetails=1`, {
+      headers: { 'Accept-Language': 'id' }
+    });
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      searchResults.innerHTML = '<div class="search-loading">Tidak ditemukan</div>';
+      return;
+    }
+
+    searchResults.innerHTML = data.map(item => `
+      <div class="search-item" data-lat="${item.lat}" data-lng="${item.lon}">
+        <div class="s-name">${item.display_name.split(',')[0]}</div>
+        <div class="s-addr">${item.display_name}</div>
+      </div>
+    `).join('');
+
+    searchResults.querySelectorAll('.search-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const lat = parseFloat(el.dataset.lat);
+        const lng = parseFloat(el.dataset.lon);
+        const r = parseInt(document.getElementById('map-radius-slider').value) || 100;
+        if (pickerMap) pickerMap.setView([lat, lng], 17);
+        updatePickerMarker(lat, lng, r);
+        searchResults.classList.remove('show');
+        searchInput.value = '';
+      });
+    });
+  } catch(e) {
+    searchResults.innerHTML = '<div class="search-loading">Gagal mencari</div>';
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#search-results') && !e.target.closest('#map-search')) {
+    searchResults.classList.remove('show');
+  }
+});
+
+// ─── Camera ──────────────────────────────────────────────────────────────────
 async function initCameras() {
   try {
     streamScan = await navigator.mediaDevices.getUserMedia({ video: { width: 308, height: 231, facingMode: 'user' } });
@@ -872,7 +1208,7 @@ async function recordAttendance(person, confidence) {
   await refreshGPS();
 
   const now = new Date();
-  const todayStr = getLocalDate(now); // Gunakan format YYYY-MM-DD
+  const todayStr = getLocalDate(now);
 
   let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
   let status = 'TIDAK HADIR';
@@ -1062,6 +1398,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const check = setInterval(() => {
       if (typeof faceapi !== 'undefined') { clearInterval(check); loadModels(); }
     }, 300);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('map-modal').classList.contains('show')) {
+    closeMapPicker();
   }
 });
 </script>
