@@ -620,8 +620,13 @@ async function loadModels() {
   await refreshFromSheets();
 
   document.getElementById('load-msg').textContent = 'MENYINKRONKAN LOG ABSENSI...';
-  document.getElementById('load-fill').style.width = '90%';
+  document.getElementById('load-fill').style.width = '85%';
   await refreshAttendance();
+
+  // === TAMBAHAN BARU: Muat geofence saat startup agar berlaku untuk SEMUA user ===
+  document.getElementById('load-msg').textContent = 'MEMUAT KONFIGURASI GEOFENCE...';
+  document.getElementById('load-fill').style.width = '95%';
+  await getGeofenceFromSheets();
 
   document.getElementById('load-fill').style.width = '100%';
   await new Promise(r => setTimeout(r, 300));
@@ -819,15 +824,25 @@ async function getGeofenceFromSheets() {
     const json = await res.json();
     if (json.status === 'ok' && json.geofence) {
       const g = json.geofence;
-      if (g.centerLat !== null && g.centerLng !== null) {
-        geofence = { centerLat: g.centerLat, centerLng: g.centerLng, radiusM: g.radiusM || 100 };
-        document.getElementById('geo-lat').value = geofence.centerLat;
-        document.getElementById('geo-lng').value = geofence.centerLng;
-        document.getElementById('geo-radius').value = geofence.radiusM;
-        document.getElementById('geo-status').textContent =
-          `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m`;
-        updateGeofenceBadge();
-        updatePreviewMap();
+      
+      // Validasi ketat: pastikan bukan null, bukan string kosong, dan adalah angka
+      if (g.centerLat !== null && g.centerLng !== null && !isNaN(g.centerLat) && !isNaN(g.centerLng)) {
+        geofence = { 
+          centerLat: parseFloat(g.centerLat), 
+          centerLng: parseFloat(g.centerLng), 
+          radiusM: parseInt(g.radiusM) || 100 
+        };
+        
+        // Update UI hanya jika sedang dalam mode admin
+        if (mode === 'admin') {
+          document.getElementById('geo-lat').value = geofence.centerLat;
+          document.getElementById('geo-lng').value = geofence.centerLng;
+          document.getElementById('geo-radius').value = geofence.radiusM;
+          document.getElementById('geo-status').textContent =
+            `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m`;
+          updateGeofenceBadge();
+          updatePreviewMap();
+        }
       }
     }
   } catch(e) {
@@ -1211,7 +1226,7 @@ async function recordAttendance(person, confidence) {
   const todayStr = getLocalDate(now);
 
   let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
-  let status = 'TIDAK HADIR';
+  let status = 'TIDAK HADIR'; // Default aman: TIDAK HADIR
 
   if (currentPos) {
     lat = currentPos.lat;
@@ -1219,11 +1234,18 @@ async function recordAttendance(person, confidence) {
     accuracy = currentPos.accuracy;
     mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
 
-    if (geofence.centerLat !== null && geofence.centerLng !== null) {
+    // === PERBAIKAN: Validasi ketat apakah geofence sudah di-set dengan benar ===
+    const isGeofenceValid = 
+      geofence.centerLat !== null && geofence.centerLat !== undefined && geofence.centerLat !== '' && !isNaN(geofence.centerLat) &&
+      geofence.centerLng !== null && geofence.centerLng !== undefined && geofence.centerLng !== '' && !isNaN(geofence.centerLng);
+
+    if (isGeofenceValid) {
       distance = Math.round(distanceMeters(lat, lng, geofence.centerLat, geofence.centerLng));
+      // Logika inti: Jika jarak <= radius, HADIR. Jika > radius, TIDAK HADIR.
       status = distance <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
     } else {
-      status = 'HADIR';
+      // Fallback HANYA jika Admin benar-benar belum mengatur geofence sama sekali
+      status = 'HADIR'; 
     }
   }
 
