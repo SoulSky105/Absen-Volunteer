@@ -475,13 +475,22 @@
     .map-search { flex: 1; }
   }
 
- /* === PAKSA KAMERA MIRROR (SEPERTI CERMIN SELFIE) === */
+ /* === VIDEO DI-MIRROR (SEPERTI CERMIN), CANVAS TIDAK === */
+
+/* Mirror video preview */
 #video, 
-#video-reg, 
-#overlay, 
-#overlay-reg {
+#video-reg {
   transform: scaleX(-1) !important;
   -webkit-transform: scaleX(-1) !important;
+  -moz-transform: scaleX(-1) !important;
+}
+
+/* Canvas tetap normal (tidak di-mirror) */
+#overlay, 
+#overlay-reg {
+  transform: none !important;
+  -webkit-transform: none !important;
+  direction: ltr !important;
 }
  
 </style>
