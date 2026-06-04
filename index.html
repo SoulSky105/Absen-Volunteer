@@ -558,7 +558,7 @@
       </div>
     </div>
 
-    <div style="border-top:1px solid var(--border);padding:12px 16px 6px;flex-shrink:0;">
+    <div id="db-section" style="border-top:1px solid var(--border);padding:12px 16px 6px;flex-shrink:0; display: none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:.08em;">DATABASE WAJAH (<span id="db-count">0</span>)</div>
         <button onclick="refreshFromSheets()" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">↻ SYNC</button>
@@ -1005,6 +1005,7 @@ function toggleAdmin() {
 function enterAdmin() {
   mode = 'admin';
   updateAdminUI();
+  renderDb(); // Render database wajah saat masuk mode admin
   getGeofenceFromSheets();
   refreshAttendance();
   showToast('Mode Admin aktif', 'success');
@@ -1016,8 +1017,18 @@ function exitAdmin() {
 }
 function updateAdminUI() {
   const isAdmin = mode === 'admin';
+  
+  // Toggle visitor gate dan admin content
   document.getElementById('visitor-gate').style.display = isAdmin ? 'none' : 'flex';
   document.getElementById('admin-content').style.display = isAdmin ? 'flex' : 'none';
+  
+  // Toggle database section (hanya tampil untuk admin)
+  const dbSection = document.getElementById('db-section');
+  if (dbSection) {
+    dbSection.style.display = isAdmin ? 'block' : 'none';
+  }
+  
+  // Update tombol admin toggle
   const btn = document.getElementById('btn-admin-toggle');
   btn.textContent = isAdmin ? 'KELUAR ADMIN' : 'ADMIN';
   if (isAdmin) btn.classList.add('admin-active');
@@ -1564,11 +1575,22 @@ function showUnknown() {
 async function captureAndRegister() {
   const name = document.getElementById('reg-name').value.trim();
   const role = document.getElementById('reg-role').value.trim();
+  
   if (!name) { showToast('Nama wajib diisi!', 'error'); return; }
   if (!role) { showToast('Pilih divisi terlebih dahulu!', 'error'); return; }
+  
   const vid = document.getElementById('video-reg');
   if (!vid.videoWidth) { showToast('Kamera belum siap!', 'error'); return; }
+  
+  // === VALIDASI: Cek apakah nama sudah terdaftar ===
+  const nameExists = faceDb.some(p => p.name.toLowerCase() === name.toLowerCase());
+  if (nameExists) {
+    showToast(`⚠️ Nama "${name}" sudah terdaftar!`, 'error');
+    return;
+  }
+  
   showToast('Mengambil descriptor wajah...', '');
+  
   try {
     const samples = [];
     for (let i = 0; i < 3; i++) {
@@ -1576,25 +1598,39 @@ async function captureAndRegister() {
       if (det) samples.push(Array.from(det.descriptor));
       await new Promise(r => setTimeout(r, 400));
     }
-    if (samples.length === 0) { showToast('Wajah tidak terdeteksi! Pastikan pencahayaan cukup.', 'error'); return; }
+    
+    if (samples.length === 0) { 
+      showToast('Wajah tidak terdeteksi! Pastikan pencahayaan cukup.', 'error'); 
+      return; 
+    }
+    
     const id = 'USR-' + Date.now();
 
-    const existing = faceDb.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
-    if (existing >= 0) {
-      faceDb[existing].descriptors = (faceDb[existing].descriptors || []).concat(samples);
-      faceDb[existing].role = role;
-    } else {
-      faceDb.push({ name, id, role, descriptors: samples, registeredAt: new Date().toISOString() });
-    }
+    // === HANYA TAMBAH BARU, TIDAK ADA UPDATE/MERGE ===
+    faceDb.push({ 
+      name, 
+      id, 
+      role, 
+      descriptors: samples, 
+      registeredAt: new Date().toISOString() 
+    });
+    
     localStorage.setItem('facedb', JSON.stringify(faceDb));
-    renderDb(); updateStats();
+    renderDb(); 
+    updateStats();
+    
     showToast(`✓ ${name} didaftarkan. Mengirim ke Sheets...`, 'success');
     await sendPersonToSheets({ name, id, role, descriptors: samples });
-    showToast(`✓ ${name} tersinkron ke Google Sheets!`, 'success');
+    showToast(`✓ ${name} berhasil didaftarkan!`, 'success');
+    
+    // Reset form
     document.getElementById('reg-name').value = '';
     document.getElementById('reg-role').selectedIndex = 0;
+    
     setTimeout(() => refreshFromSheets(), 1500);
-  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  } catch(e) { 
+    showToast('Error: ' + e.message, 'error'); 
+  }
 }
 
 // ─── UI Render ────────────────────────────────────────────────────────────────
