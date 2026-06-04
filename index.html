@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOLUNTEER — Grebeg Suro Ponorogo 2026</title>
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #050B18; --surface: #0B1426; --surface2: #122036;
+    --border: rgba(125,205,235,0.10); --border2: rgba(125,205,235,0.20);
+    --accent: #2DD4E8; --red: #FF4D6A; --amber: #F5C451;
+    --text: #EAF3FA; --text2: #8EA6BE; --text3: #51647C;
+    --radius: 12px; --radius-lg: 18px;
+    --mono: 'Space Mono', monospace; --sans: 'Sora', sans-serif;
+  }
+  html { height: 100%; background: var(--bg); }
+  body { min-height: 100%; color: var(--text); font-family: var(--sans);
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(45,212,232,0.13), transparent 60%),
+      radial-gradient(ellipse 100% 75% at 50% -12%, #103A5C, #0A2238 38%, var(--bg) 72%);
+    background-attachment: fixed; background-repeat: no-repeat; }
+  .shell { display: grid; grid-template-columns: 340px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .main { display: flex; flex-direction: column; padding: 28px; gap: 20px; overflow-y: auto; }
+  .sid-head { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); background: radial-gradient(130% 90% at 0% 0%, rgba(45,212,232,0.10), transparent 70%); }
+  .sid-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .logo-text { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: var(--text); text-shadow: 0 0 14px rgba(45,212,232,0.45); }
+  .logo-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.06em; margin-left: 20px; }
+  .sync-badge { margin: 12px 16px 0; padding: 8px 12px; background: rgba(45,212,232,0.07); border: 1px solid rgba(45,212,232,0.25); border-radius: 8px; display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.05em; }
+  .sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
+  .sync-badge.offline { background: rgba(255,188,66,0.07); border-color: rgba(255,188,66,0.25); color: var(--amber); }
+  .sync-badge.offline .dot { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .tabs { display: flex; gap: 4px; padding: 12px 16px 0; }
+  .tab { flex: 1; padding: 8px 0; font-size: 12px; font-family: var(--mono); font-weight: 700; letter-spacing: 0.05em; border: 1px solid var(--border); background: transparent; color: var(--text3); border-radius: 8px; cursor: pointer; transition: all .2s; }
+  .tab.active { background: rgba(45,212,232,0.15); border-color: var(--accent); color: var(--accent); }
+  .tab:hover:not(.active) { border-color: var(--border2); color: var(--text2); }
+  .panel { display: none; flex-direction: column; flex: 1; }
+  .panel.active { display: flex; }
+  .cam-wrap { position: relative; margin: 16px; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--border); }
+  .cam-wrap video, .cam-wrap canvas { display: block; width: 100%; border-radius: var(--radius); }
+  .cam-wrap canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+  .cam-corner { position: absolute; width: 18px; height: 18px; border-color: var(--accent); border-style: solid; opacity: .8; }
+  .cam-corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+  .cam-corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+  .cam-corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+  .cam-corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+  .scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scanMove 2.5s linear infinite; top: 0; opacity: 0; }
+  .scan-line.running { opacity: 1; }
+  @keyframes scanMove { 0%{top:0} 100%{top:100%} }
+  .status-bar { margin: 0 16px; padding: 10px 14px; border-radius: var(--radius); background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-size: 12px; font-family: var(--mono); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background .3s; }
+  .status-dot.ok { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .status-dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .status-text { color: var(--text2); flex: 1; }
+  .btn-primary { margin: 12px 16px 0; padding: 11px 0; background: var(--accent); color: #000; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; border: none; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-primary:hover { background: #67E8F9; }
+  .btn-primary:disabled { background: var(--surface2); color: var(--text3); cursor: not-allowed; }
+  .notif { margin: 12px 16px 0; padding: 14px; border-radius: var(--radius); background: var(--surface2); border: 1px solid var(--border); animation: slideIn .3s ease; display: none; }
+  .notif.show { display: block; }
+  .notif.hadir { border-color: var(--accent); background: rgba(45,212,232,0.07); }
+  .notif.unknown { border-color: var(--red); background: rgba(255,77,106,0.07); }
+  @keyframes slideIn { from{transform:translateY(-8px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .notif-name { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .notif.unknown .notif-name { color: var(--red); }
+  .notif-status { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 0.06em; }
+  .notif-time { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 6px; }
+  .reg-form { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; }
+  .field label { display: block; font-size: 11px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.06em; margin-bottom: 6px; }
+  .field input, .field select { width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; transition: border .2s; appearance: none; -webkit-appearance: none; -moz-appearance: none; }
+  .field select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%238A9099' d='M6 8L0 0h12z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+  .field select option { background: var(--surface2); color: var(--text); }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .cam-mini { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--border); margin-bottom: 4px; }
+  .cam-mini video { display: block; width: 100%; border-radius: var(--radius); }
+  .cam-mini canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
+  .capture-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.7); border: 1px solid var(--accent); color: var(--accent); font-size: 10px; font-family: var(--mono); padding: 3px 10px; border-radius: 20px; display: none; }
+  .capture-indicator.show { display: block; }
+  .btn-sec { padding: 9px 0; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-sec:hover { border-color: var(--accent); color: var(--accent); background: rgba(45,212,232,0.15); }
+  .topbar { display: flex; align-items: center; justify-content: space-between; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-title span { color: var(--accent); }
+  .date-badge { font-family: var(--mono); font-size: 12px; color: var(--text2); background: var(--surface); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+  .stat-label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.06em; margin-bottom: 8px; }
+  .stat-val { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .stat-val.green { color: var(--accent); }
+  .stat-val.amber { color: var(--amber); }
+  .log-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); flex: 1; overflow: hidden; }
+  .log-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .log-title { font-size: 13px; font-weight: 600; }
+  .log-head-right { display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 10px; font-family: var(--mono); padding: 3px 9px; border-radius: 20px; background: rgba(45,212,232,0.15); color: var(--accent); border: 1px solid rgba(45,212,232,.25); letter-spacing: 0.05em; }
+  .btn-refresh-log { background: transparent; border: 1px solid var(--border); color: var(--text3); font-size: 10px; font-family: var(--mono); padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all .2s; letter-spacing: 0.05em; }
+  .btn-refresh-log:hover { border-color: var(--accent); color: var(--accent); }
+  .log-table-wrap { overflow-x: auto; max-height: 500px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 10px 20px; text-align: left; font-size: 10px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.08em; font-weight: 400; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  td { padding: 12px 20px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-family: var(--mono); letter-spacing: 0.05em; font-weight: 700; }
+  .pill.hadir { background: rgba(45,212,232,.12); color: var(--accent); border: 1px solid rgba(45,212,232,.25); }
+  .pill.tidak-hadir { background: rgba(255,77,106,.12); color: var(--red); border: 1px solid rgba(255,77,106,.25); }
+  td.name-cell { color: var(--text); font-weight: 600; }
+  .empty-state { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; }
+  .empty-state .icon { font-size: 32px; margin-bottom: 8px; opacity: .4; }
+  .db-list { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+  .db-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(45,212,232,0.15); border: 1px solid rgba(45,212,232,.3); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--accent); flex-shrink: 0; font-family: var(--mono); }
+  .db-info { flex: 1; min-width: 0; }
+  .db-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-meta { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+  .db-del { background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: all .2s; flex-shrink: 0; }
+  .db-del:hover { background: rgba(255,77,106,.15); color: var(--red); }
+  #toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 18px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13px; font-family: var(--mono); color: var(--text); transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 9999; pointer-events: none; max-width: 90vw; }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: var(--accent); color: var(--accent); background: rgba(45,212,232,.08); }
+  #toast.error { border-color: var(--red); color: var(--red); background: rgba(255,77,106,.08); }
+  #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; z-index: 9998; }
+  #loading.hide { display: none; }
+  .load-text { font-family: var(--mono); font-size: 12px; color: var(--text2); letter-spacing: 0.08em; text-align: center; padding: 0 20px; }
+  .load-bar { width: 200px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .load-fill { height: 100%; background: var(--accent); width: 0%; transition: width .4s; border-radius: 2px; }
+
+  .btn-admin-toggle { padding: 5px 11px; background: transparent; border: 1px solid var(--border2); color: var(--text3); font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; border-radius: 8px; cursor: pointer; transition: all .2s; flex-shrink: 0; white-space: nowrap; }
+  .btn-admin-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-admin-toggle.admin-active { background: rgba(45,212,232,.15); border-color: var(--accent); color: var(--accent); }
+
+  .visitor-gate { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; text-align: center; padding: 40px 20px; }
+  .visitor-gate-icon { font-size: 48px; opacity: .25; }
+  .visitor-gate-title { font-size: 18px; font-weight: 700; color: var(--text2); }
+  .visitor-gate-sub { font-size: 13px; color: var(--text3); font-family: var(--mono); line-height: 1.7; }
+  .btn-admin-login { padding: 10px 24px; background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; border-radius: var(--radius); cursor: pointer; transition: all .2s; margin-top: 4px; }
+  .btn-admin-login:hover { background: rgba(45,212,232,.15); }
+
+  #admin-content { flex: 1; flex-direction: column; gap: 20px; }
+
+  .geofence-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .geofence-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .geofence-panel-title { font-size: 13px; font-weight: 600; }
+  .geo-active-badge { font-size: 10px; font-family: var(--mono); padding: 3px 9px; border-radius: 20px; background: rgba(45,212,232,0.1); color: var(--accent); border: 1px solid rgba(45,212,232,.2); letter-spacing: 0.05em; }
+  .geo-active-badge.off { background: rgba(255,188,66,0.1); color: var(--amber); border-color: rgba(255,188,66,.2); }
+  .geofence-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .geofence-field label { display: block; font-size: 10px; font-family: var(--mono); color: var(--text3); letter-spacing: 0.06em; margin-bottom: 6px; }
+  .geofence-input { width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; transition: border .2s; }
+  .geofence-input:focus { border-color: var(--accent); }
+  .geofence-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn-geo-loc { padding: 9px 16px; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-geo-loc:hover { border-color: var(--accent); color: var(--accent); background: rgba(45,212,232,.08); }
+  .btn-geo-save { padding: 9px 20px; background: var(--accent); color: #000; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; border: none; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-geo-save:hover { background: #67E8F9; }
+  .btn-geo-del { padding: 9px 16px; background: transparent; border: 1px solid rgba(255,77,106,.3); color: var(--red); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+  .btn-geo-del:hover { border-color: var(--red); background: rgba(255,77,106,.1); }
+  .geo-status { font-size: 11px; font-family: var(--mono); color: var(--text3); margin-top: 12px; }
+
+  .loc-link { color: var(--accent); text-decoration: none; font-size: 12px; white-space: nowrap; }
+  .loc-link:hover { text-decoration: underline; }
+  .loc-none { color: var(--text3); font-size: 12px; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .sid-head { padding: 16px 16px 12px; }
+    .logo-text { font-size: 14px; }
+    .logo-sub { font-size: 10px; }
+    .sync-badge { margin: 10px 12px 0; font-size: 9px; padding: 6px 10px; }
+    .tabs { padding: 10px 12px 0; }
+    .tab { font-size: 11px; padding: 7px 0; }
+    .main { padding: 16px; gap: 14px; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .page-title { font-size: 18px; }
+    .date-badge { font-size: 10px; padding: 5px 10px; }
+    .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-card { padding: 12px 10px; }
+    .stat-label { font-size: 9px; margin-bottom: 4px; }
+    .stat-val { font-size: 20px; }
+    .log-head { padding: 12px 14px; }
+    .log-title { font-size: 12px; }
+    th { padding: 8px 12px; font-size: 9px; }
+    td { padding: 10px 12px; font-size: 12px; }
+    .cam-wrap { margin: 10px; }
+    .status-bar { margin: 0 10px; font-size: 11px; padding: 8px 12px; }
+    .btn-primary { margin: 10px 10px 0; }
+    .notif { margin: 10px 10px 0; padding: 10px; }
+    .notif-name { font-size: 15px; }
+    .reg-form { padding: 12px; gap: 10px; }
+    .db-list { max-height: 140px !important; padding: 8px 12px !important; }
+    .db-item { padding: 8px 10px; }
+    .avatar { width: 32px; height: 32px; font-size: 11px; }
+    .db-name { font-size: 12px; }
+    .db-meta { font-size: 9px; }
+    #toast { bottom: 12px; right: 12px; left: 12px; font-size: 12px; text-align: center; }
+    .geofence-grid { grid-template-columns: 1fr 1fr; }
+    .geofence-panel { padding: 14px; }
+  }
+  @media (max-width: 480px) {
+    .stats { gap: 6px; }
+    .stat-card { padding: 10px 8px; border-radius: var(--radius); }
+    .stat-label { font-size: 8px; }
+    .stat-val { font-size: 18px; }
+    .page-title { font-size: 16px; }
+    .cam-wrap { margin: 8px; }
+    .status-bar { margin: 0 8px; padding: 8px 10px; font-size: 10px; }
+    .btn-primary { margin: 8px 8px 0; font-size: 11px; }
+    .notif { margin: 8px 8px 0; }
+    .notif-name { font-size: 14px; }
+    th { padding: 6px 8px; }
+    td { padding: 8px; font-size: 11px; }
+    .geofence-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div style="font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:#2DD4E8;letter-spacing:0.16em;text-shadow:0 0 26px rgba(45,212,232,0.7);">VOLUNTEER</div>
+  <div style="font-family:'Space Mono',monospace;font-size:10px;color:#8EA6BE;letter-spacing:0.24em;margin-top:-8px;">GREBEG SURO PONOROGO 2026</div>
+  <div class="load-text" id="load-msg">MEMUAT MODEL AI...</div>
+  <div class="load-bar"><div class="load-fill" id="load-fill"></div></div>
+</div>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sid-head">
+      <div class="sid-head-row">
+        <div style="min-width:0;">
+          <div class="logo"><div class="logo-dot"></div><div class="logo-text">VOLUNTEER</div></div>
+          <div class="logo-sub">GREBEG SURO PONOROGO 2026</div>
+        </div>
+        <button class="btn-admin-toggle" id="btn-admin-toggle" onclick="toggleAdmin()">ADMIN</button>
+      </div>
+    </div>
+    <div class="sync-badge" id="sync-badge"><div class="dot"></div><div id="sync-text">MENYINKRONKAN DATABASE...</div></div>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('scan', this)">SCAN</button>
+      <button class="tab" onclick="showTab('reg', this)">DAFTAR</button>
+    </div>
+
+    <div class="panel active" id="panel-scan">
+      <div class="cam-wrap" id="cam-wrap">
+        <video id="video" autoplay muted playsinline width="308" height="231" style="display:block;width:100%;"></video>
+        <canvas id="overlay"></canvas>
+        <div class="cam-corner tl"></div><div class="cam-corner tr"></div><div class="cam-corner bl"></div><div class="cam-corner br"></div>
+        <div class="scan-line" id="scan-line"></div>
+      </div>
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <div class="status-text" id="status-text">Menginisialisasi...</div>
+      </div>
+      <div class="notif" id="notif">
+        <div class="notif-name" id="notif-name">—</div>
+        <div class="notif-status" id="notif-status">—</div>
+        <div class="notif-time" id="notif-time">—</div>
+      </div>
+      <button class="btn-primary" id="btn-scan" onclick="toggleScan()" disabled>MULAI SCAN</button>
+      <div style="height:12px;"></div>
+    </div>
+
+    <div class="panel" id="panel-reg">
+      <div class="reg-form">
+        <div class="field">
+          <label>NAMA LENGKAP</label>
+          <input type="text" id="reg-name" placeholder="contoh: Budi Santoso">
+        </div>
+        <div class="field">
+          <label>DEVISI</label>
+          <select id="reg-role">
+            <option value="" disabled selected>— Pilih Divisi —</option>
+            <option value="Stage Manager">Stage Manager</option>
+            <option value="Administrasi">Administrasi</option>
+            <option value="Pelayanan Penonton">Pelayanan Penonton</option>
+            <option value="Ticketing">Ticketing</option>
+            <option value="Keamanan">Keamanan</option>
+            <option value="Media">Media</option>
+            <option value="Runner">Runner</option>
+            <option value="Sobat Media Partner">Sobat Media Partner</option>
+            <option value="Liaison Office">Liaison Office</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:.06em;margin-bottom:6px;">KAMERA WAJAH</label>
+          <div class="cam-mini" id="cam-mini">
+            <video id="video-reg" autoplay muted playsinline style="display:block;width:100%;"></video>
+            <canvas id="overlay-reg"></canvas>
+            <div class="capture-indicator" id="cap-indicator">✓ WAJAH TERDETEKSI</div>
+          </div>
+        </div>
+        <button class="btn-sec" onclick="captureAndRegister()">📸 AMBIL FOTO & DAFTARKAN</button>
+        <div style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;line-height:1.7;">
+          Pastikan wajah terlihat jelas, pencahayaan cukup, dan hadap ke kamera. Data akan tersinkron ke semua device via Google Sheets.
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding:12px 16px 6px;flex-shrink:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text3);letter-spacing:.08em;">DATABASE WAJAH (<span id="db-count">0</span>)</div>
+        <button onclick="refreshFromSheets()" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .2s;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">↻ SYNC</button>
+      </div>
+      <div class="db-list" id="db-list" style="max-height:180px;padding:0;gap:6px;"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="visitor-gate" id="visitor-gate">
+      <div class="visitor-gate-icon">🔒</div>
+      <div class="visitor-gate-title">Mode Visitor</div>
+      <div class="visitor-gate-sub">Gunakan tab SCAN &amp; DAFTAR di sidebar untuk absensi.<br>Login sebagai admin untuk melihat log kehadiran &amp; pengaturan.</div>
+      <button class="btn-admin-login" onclick="toggleAdmin()">🔑 MASUK SEBAGAI ADMIN</button>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Sistem <span>Absensi</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;font-family:'Space Mono',monospace;" id="main-subtitle">Face Recognition — Cloud Synced</div>
+        </div>
+        <div class="date-badge" id="date-badge">—</div>
+      </div>
+      <div class="stats">
+        <div class="stat-card"><div class="stat-label">HADIR HARI INI</div><div class="stat-val green" id="stat-hadir">0</div></div>
+        <div class="stat-card"><div class="stat-label">TERDAFTAR</div><div class="stat-val amber" id="stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-label">TOTAL ABSENSI</div><div class="stat-val" id="stat-scan">0</div></div>
+      </div>
+      <div class="log-card">
+        <div class="log-head">
+          <div class="log-title">Log Kehadiran</div>
+          <div class="log-head-right">
+            <div class="badge" id="log-badge">0 ENTRI</div>
+            <button class="btn-refresh-log" onclick="refreshAttendance()">↻ REFRESH</button>
+          </div>
+        </div>
+        <div class="log-table-wrap">
+          <table>
+            <thead>
+              <tr><th>WAKTU</th><th>NAMA</th><th>DEVISI</th><th>STATUS</th><th>CONFIDENCE</th><th>LOKASI</th></tr>
+            </thead>
+            <tbody id="log-body">
+              <tr><td colspan="6"><div class="empty-state"><div class="icon">⬡</div>Belum ada absensi. Mulai scan wajah untuk mencatat kehadiran.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="geofence-panel">
+        <div class="geofence-panel-head">
+          <div class="geofence-panel-title">Setting Geofence</div>
+          <div class="geo-active-badge off" id="geo-active-badge">BELUM DI-SET</div>
+        </div>
+        <div class="geofence-grid">
+          <div class="geofence-field">
+            <label>LATITUDE PUSAT</label>
+            <input class="geofence-input" type="number" id="geo-lat" placeholder="-6.2000000" step="0.0000001">
+          </div>
+          <div class="geofence-field">
+            <label>LONGITUDE PUSAT</label>
+            <input class="geofence-input" type="number" id="geo-lng" placeholder="106.8160000" step="0.0000001">
+          </div>
+          <div class="geofence-field">
+            <label>RADIUS (METER)</label>
+            <input class="geofence-input" type="number" id="geo-radius" placeholder="100" min="1" value="100">
+          </div>
+        </div>
+        <div class="geofence-actions">
+          <button class="btn-geo-loc" onclick="useMyLocation()">📍 GUNAKAN LOKASI SAYA</button>
+          <button class="btn-geo-save" onclick="saveGeofence()">SIMPAN</button>
+          <button class="btn-geo-del" id="btn-geo-del" onclick="deleteGeofence()">🗑 HAPUS</button>
+        </div>
+        <div class="geo-status" id="geo-status">Belum ada konfigurasi geofence. Isi koordinat pusat dan simpan.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsvJ3iVt2UmAvE0nOSGECftj4-AYpW-ZhIeUdKLtXauGqunWAhBobbrpfa4uVk1n_4ng/exec';
+const ADMIN_PASS = 'Admin123';
+
+let faceDb = [];
+let attendanceLog = [];
+let isScanning = false;
+let modelsLoaded = false;
+let streamScan = null, streamReg = null;
+let detectionInterval = null;
+let scanCooldown = false;
+let regPreviewInterval = null;
+
+// GPS state
+let currentPos = null;
+let geofence = { centerLat: null, centerLng: null, radiusM: 100 };
+let mode = 'visitor';
+
+// Auto-refresh state
+let attendanceRefreshInterval = null;
+let isRefreshingAttendance = false;
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
+
+// Format tanggal lokal YYYY-MM-DD (Bebas bug zona waktu / ISO String)
+function getLocalDate(d = new Date()) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDate(d) {
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function formatTime(d) { return d.toTimeString().slice(0,8); }
+function updateClock() {
+  const now = new Date();
+  const el = document.getElementById('date-badge');
+  if (el) el.textContent = formatDate(now) + ' · ' + formatTime(now);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function setSyncStatus(online, text) {
+  const badge = document.getElementById('sync-badge');
+  const txt = document.getElementById('sync-text');
+  txt.textContent = text;
+  if (online) badge.classList.remove('offline');
+  else badge.classList.add('offline');
+}
+
+// ─── Haversine ───────────────────────────────────────────────────────────────
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ─── Geolocation ─────────────────────────────────────────────────────────────
+function initGeolocation() {
+  if (!navigator.geolocation) {
+    showToast('GPS tidak tersedia di browser ini', '');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentPos = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: Math.round(pos.coords.accuracy)
+      };
+    },
+    err => {
+      setStatus('warn', 'Izin lokasi ditolak — absensi tetap jalan tanpa GPS');
+      setTimeout(() => setStatus('ok', 'Kamera siap. Tekan MULAI SCAN.'), 5000);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function refreshGPS() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        currentPos = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: Math.round(pos.coords.accuracy)
+        };
+        resolve();
+      },
+      () => resolve(),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
+}
+
+// ─── Model Loading ────────────────────────────────────────────────────────────
+async function loadModels() {
+  initGeolocation();
+
+  const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+  const steps = [
+    { fn: () => faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL), label: 'MEMUAT DETEKTOR...', pct: 15 },
+    { fn: () => faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL), label: 'MEMUAT LANDMARK...', pct: 30 },
+    { fn: () => faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL), label: 'MEMUAT PENGENAL WAJAH...', pct: 45 },
+    { fn: () => faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL), label: 'FINALISASI MODEL...', pct: 60 },
+  ];
+  for (const s of steps) {
+    document.getElementById('load-msg').textContent = s.label;
+    document.getElementById('load-fill').style.width = s.pct + '%';
+    try { await s.fn(); } catch(e) { console.warn('Model load warning:', e); }
+  }
+  modelsLoaded = true;
+
+  document.getElementById('load-msg').textContent = 'MENYINKRONKAN DATABASE...';
+  document.getElementById('load-fill').style.width = '75%';
+  await refreshFromSheets();
+
+  document.getElementById('load-msg').textContent = 'MENYINKRONKAN LOG ABSENSI...';
+  document.getElementById('load-fill').style.width = '90%';
+  await refreshAttendance();
+
+  document.getElementById('load-fill').style.width = '100%';
+  await new Promise(r => setTimeout(r, 300));
+  document.getElementById('loading').classList.add('hide');
+  initCameras();
+  
+  // Mulai auto-refresh agar log tersinkron real-time antar device
+  startAutoRefresh();
+}
+
+// ─── Auto Refresh (Real-time Sync) ───────────────────────────────────────────
+function startAutoRefresh() {
+  if (attendanceRefreshInterval) clearInterval(attendanceRefreshInterval);
+  attendanceRefreshInterval = setInterval(() => {
+    if (mode === 'admin') {
+      refreshAttendance();
+    }
+  }, 5000); // Refresh setiap 5 detik
+}
+
+function stopAutoRefresh() {
+  if (attendanceRefreshInterval) {
+    clearInterval(attendanceRefreshInterval);
+    attendanceRefreshInterval = null;
+  }
+}
+
+// ─── Sheets Sync ─────────────────────────────────────────────────────────────
+async function refreshFromSheets() {
+  setSyncStatus(false, 'MENYINKRONKAN DATABASE...');
+  try {
+    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getPersons', { redirect: 'follow' });
+    const json = await res.json();
+    if (json.status === 'ok' && Array.isArray(json.persons)) {
+      faceDb = json.persons;
+      localStorage.setItem('facedb', JSON.stringify(faceDb));
+      setSyncStatus(true, `SHEETS TERHUBUNG · ${faceDb.length} WAJAH`);
+    } else { throw new Error('Response tidak valid'); }
+  } catch(e) {
+    console.warn('Sheets fetch error:', e);
+    const cached = JSON.parse(localStorage.getItem('facedb') || '[]');
+    if (cached.length > 0) {
+      faceDb = cached;
+      setSyncStatus(false, `OFFLINE · ${faceDb.length} WAJAH (CACHE)`);
+    } else {
+      faceDb = [];
+      setSyncStatus(false, 'OFFLINE · DATABASE KOSONG');
+    }
+  }
+  renderDb();
+  updateStats();
+}
+
+async function refreshAttendance() {
+  if (isRefreshingAttendance) return; // Cegah request bertumpuk
+  isRefreshingAttendance = true;
+  
+  const today = getLocalDate();
+  try {
+    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getAttendance', { redirect: 'follow' });
+    const json = await res.json();
+    if (json.status === 'ok' && Array.isArray(json.logs)) {
+      // Normalisasi format tanggal dari server (mengatasi konversi otomatis Date object Apps Script)
+      let serverLogs = json.logs.map(log => {
+        if (log.date && typeof log.date === 'string' && log.date.includes('T')) {
+          log.date = getLocalDate(new Date(log.date));
+        } else if (log.date) {
+          log.date = String(log.date);
+        }
+        return log;
+      }).filter(log => log.date === today);
+
+      // Optimistic UI: Pertahankan log lokal yang baru saja diabsen (< 15 detik) 
+      // agar tidak berkedip (flicker) saat menunggu server menyimpan data.
+      const nowTs = Date.now();
+      const pendingLocal = attendanceLog.filter(localLog => 
+        (nowTs - localLog.ts < 15000) && 
+        !serverLogs.some(sLog => String(sLog.ts) === String(localLog.ts))
+      );
+      
+      attendanceLog = [...pendingLocal, ...serverLogs].sort((a, b) => b.ts - a.ts);
+      
+      localStorage.setItem('attlog', JSON.stringify(attendanceLog));
+      renderLog();
+      updateStats();
+      return true;
+    } else {
+      throw new Error('Response tidak valid');
+    }
+  } catch(e) {
+    console.warn('Attendance fetch error:', e);
+    const cached = JSON.parse(localStorage.getItem('attlog') || '[]');
+    attendanceLog = cached.filter(x => x.date === today);
+    renderLog();
+    updateStats();
+    return false;
+  } finally {
+    isRefreshingAttendance = false;
+  }
+}
+
+async function sendToSheets(entry) {
+  try {
+    await fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'absensi', ...entry })
+    });
+  } catch(e) { console.warn('Sheets send error:', e); }
+}
+
+async function sendPersonToSheets(person) {
+  try {
+    await fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addPerson', ...person })
+    });
+  } catch(e) { console.warn('Sheets sync error:', e); }
+}
+
+// ─── Admin Mode ───────────────────────────────────────────────────────────────
+function toggleAdmin() {
+  if (mode === 'admin') {
+    exitAdmin();
+  } else {
+    const pass = prompt('Masukkan password admin:');
+    if (pass === null) return;
+    if (pass === ADMIN_PASS) {
+      enterAdmin();
+    } else {
+      showToast('Password salah!', 'error');
+    }
+  }
+}
+
+function enterAdmin() {
+  mode = 'admin';
+  updateAdminUI();
+  getGeofenceFromSheets();
+  refreshAttendance();
+  showToast('Mode Admin aktif', 'success');
+}
+
+function exitAdmin() {
+  mode = 'visitor';
+  updateAdminUI();
+  showToast('Keluar dari mode Admin', '');
+}
+
+function updateAdminUI() {
+  const isAdmin = mode === 'admin';
+  document.getElementById('visitor-gate').style.display = isAdmin ? 'none' : 'flex';
+  document.getElementById('admin-content').style.display = isAdmin ? 'flex' : 'none';
+  const btn = document.getElementById('btn-admin-toggle');
+  btn.textContent = isAdmin ? 'KELUAR ADMIN' : 'ADMIN';
+  if (isAdmin) btn.classList.add('admin-active');
+  else btn.classList.remove('admin-active');
+}
+
+// ─── Geofence ─────────────────────────────────────────────────────────────────
+function useMyLocation() {
+  if (!currentPos) {
+    showToast('Posisi GPS belum tersedia. Pastikan izin lokasi diberikan.', 'error');
+    return;
+  }
+  document.getElementById('geo-lat').value = currentPos.lat.toFixed(7);
+  document.getElementById('geo-lng').value = currentPos.lng.toFixed(7);
+}
+
+async function saveGeofence() {
+  const lat = parseFloat(document.getElementById('geo-lat').value);
+  const lng = parseFloat(document.getElementById('geo-lng').value);
+  const radius = parseInt(document.getElementById('geo-radius').value);
+  if (isNaN(lat) || isNaN(lng) || isNaN(radius) || radius < 1) {
+    showToast('Isi semua field dengan nilai yang valid!', 'error');
+    return;
+  }
+  geofence = { centerLat: lat, centerLng: lng, radiusM: radius };
+  updateGeofenceBadge();
+  document.getElementById('geo-status').textContent =
+    `Aktif: (${lat.toFixed(5)}, ${lng.toFixed(5)}) — radius ${radius} m`;
+
+  try {
+    await fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'setGeofence', centerLat: lat, centerLng: lng, radiusM: radius })
+    });
+    showToast('Geofence tersimpan ke Sheets!', 'success');
+  } catch(e) {
+    showToast('Tersimpan lokal. Gagal sync ke Sheets.', '');
+  }
+}
+
+async function deleteGeofence() {
+  if (!confirm('Hapus koordinat geofence? Status absensi akan kembali HADIR otomatis (tanpa cek radius).')) return;
+  geofence = { centerLat: null, centerLng: null, radiusM: 100 };
+  document.getElementById('geo-lat').value = '';
+  document.getElementById('geo-lng').value = '';
+  document.getElementById('geo-radius').value = 100;
+  updateGeofenceBadge();
+  document.getElementById('geo-status').textContent = 'Geofence dihapus. Belum ada konfigurasi — isi koordinat pusat dan simpan.';
+
+  try {
+    await fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteGeofence' })
+    });
+    showToast('Koordinat geofence dihapus dari Sheets.', 'success');
+  } catch(e) {
+    showToast('Dihapus lokal. Gagal sync ke Sheets.', '');
+  }
+}
+
+async function getGeofenceFromSheets() {
+  try {
+    const res = await fetch(SHEETS_SCRIPT_URL + '?action=getGeofence', { redirect: 'follow' });
+    const json = await res.json();
+    if (json.status === 'ok' && json.geofence) {
+      const g = json.geofence;
+      if (g.centerLat !== null && g.centerLng !== null) {
+        geofence = { centerLat: g.centerLat, centerLng: g.centerLng, radiusM: g.radiusM || 100 };
+        document.getElementById('geo-lat').value = geofence.centerLat;
+        document.getElementById('geo-lng').value = geofence.centerLng;
+        document.getElementById('geo-radius').value = geofence.radiusM;
+        document.getElementById('geo-status').textContent =
+          `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m`;
+        updateGeofenceBadge();
+      }
+    }
+  } catch(e) {
+    console.warn('Geofence fetch error:', e);
+  }
+}
+
+function updateGeofenceBadge() {
+  const badge = document.getElementById('geo-active-badge');
+  if (geofence.centerLat !== null) {
+    badge.textContent = `AKTIF · r=${geofence.radiusM}m`;
+    badge.classList.remove('off');
+  } else {
+    badge.textContent = 'BELUM DI-SET';
+    badge.classList.add('off');
+  }
+}
+
+// ─── Camera ───────────────────────────────────────────────────────────────────
+async function initCameras() {
+  try {
+    streamScan = await navigator.mediaDevices.getUserMedia({ video: { width: 308, height: 231, facingMode: 'user' } });
+    document.getElementById('video').srcObject = streamScan;
+    streamReg = await navigator.mediaDevices.getUserMedia({ video: { width: 280, height: 210, facingMode: 'user' } });
+    document.getElementById('video-reg').srcObject = streamReg;
+    setStatus('ok', 'Kamera siap. Tekan MULAI SCAN.');
+    document.getElementById('btn-scan').disabled = false;
+    startRegPreview();
+  } catch (e) {
+    setStatus('err', 'Akses kamera ditolak: ' + e.message);
+  }
+}
+
+function setStatus(type, msg) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + type;
+  document.getElementById('status-text').textContent = msg;
+}
+
+function startRegPreview() {
+  const vid = document.getElementById('video-reg');
+  const canvas = document.getElementById('overlay-reg');
+  if (regPreviewInterval) clearInterval(regPreviewInterval);
+  regPreviewInterval = setInterval(async () => {
+    if (!modelsLoaded || !vid.videoWidth) return;
+    canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+    try {
+      const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks(true);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (det) {
+        ctx.strokeStyle = '#2DD4E8'; ctx.lineWidth = 2;
+        ctx.strokeRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
+        document.getElementById('cap-indicator').classList.add('show');
+      } else {
+        document.getElementById('cap-indicator').classList.remove('show');
+      }
+    } catch(e) { console.warn('Preview error:', e); }
+  }, 500);
+}
+
+// ─── Scan ────────────────────────────────────────────────────────────────────
+function toggleScan() { if (!isScanning) startScan(); else stopScan(); }
+function startScan() {
+  if (!modelsLoaded) return;
+  isScanning = true;
+  document.getElementById('btn-scan').textContent = 'HENTIKAN SCAN';
+  document.getElementById('scan-line').classList.add('running');
+  setStatus('warn', 'Scanning... Hadapkan wajah ke kamera.');
+  detectionInterval = setInterval(runDetection, 800);
+}
+function stopScan() {
+  isScanning = false;
+  document.getElementById('btn-scan').textContent = 'MULAI SCAN';
+  document.getElementById('scan-line').classList.remove('running');
+  setStatus('ok', 'Scan dihentikan. Siap untuk scan ulang.');
+  clearInterval(detectionInterval);
+  document.getElementById('overlay').getContext('2d').clearRect(0, 0, 999, 999);
+}
+
+async function runDetection() {
+  const vid = document.getElementById('video');
+  const canvas = document.getElementById('overlay');
+  if (!vid.videoWidth) return;
+  canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  try {
+    const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks(true).withFaceDescriptor();
+    if (!det) { setStatus('warn', 'Wajah tidak terdeteksi...'); return; }
+    ctx.strokeStyle = '#2DD4E8'; ctx.lineWidth = 2;
+    ctx.strokeRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
+    if (faceDb.length === 0) { setStatus('warn', 'Database kosong. Daftarkan wajah terlebih dahulu!'); return; }
+    if (scanCooldown) return;
+
+    let bestMatch = null, bestDist = Infinity;
+    for (const person of faceDb) {
+      if (!person.descriptors || !person.descriptors.length) continue;
+      for (const desc of person.descriptors) {
+        const dist = faceapi.euclideanDistance(det.descriptor, new Float32Array(desc));
+        if (dist < bestDist) { bestDist = dist; bestMatch = person; }
+      }
+    }
+
+    if (bestDist < 0.52) {
+      const confidence = Math.round((1 - bestDist) * 100);
+      ctx.fillStyle = 'rgba(45,212,232,0.12)';
+      ctx.fillRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
+      ctx.fillStyle = '#2DD4E8'; ctx.font = 'bold 13px Space Mono, monospace';
+      ctx.fillText(bestMatch.name, det.detection.box.x, det.detection.box.y - 8);
+      recordAttendance(bestMatch, confidence);
+      setStatus('ok', `✓ ${bestMatch.name} dikenali (${confidence}%)`);
+    } else {
+      ctx.strokeStyle = '#FF4D6A';
+      ctx.fillStyle = 'rgba(255,77,106,0.1)';
+      ctx.fillRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
+      showUnknown();
+      setStatus('err', 'Wajah tidak dikenali dalam database.');
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+async function recordAttendance(person, confidence) {
+  scanCooldown = true;
+  setTimeout(() => { scanCooldown = false; }, 5000);
+  await refreshGPS();
+
+  const now = new Date();
+  const todayStr = getLocalDate(now); // Gunakan format YYYY-MM-DD
+
+  let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
+  let status = 'TIDAK HADIR';
+
+  if (currentPos) {
+    lat = currentPos.lat;
+    lng = currentPos.lng;
+    accuracy = currentPos.accuracy;
+    mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+
+    if (geofence.centerLat !== null && geofence.centerLng !== null) {
+      distance = Math.round(distanceMeters(lat, lng, geofence.centerLat, geofence.centerLng));
+      status = distance <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
+    } else {
+      status = 'HADIR';
+    }
+  }
+
+  const entry = {
+    time: formatTime(now),
+    date: todayStr,
+    name: person.name,
+    id: person.id,
+    role: person.role,
+    status,
+    confidence,
+    ts: now.getTime(),
+    lat,
+    lng,
+    accuracy,
+    distance,
+    mapsLink
+  };
+
+  attendanceLog.unshift(entry);
+  localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
+  showNotif(person.name, status, confidence, now);
+  renderLog();
+  updateStats();
+
+  await sendToSheets(entry);
+  setTimeout(() => refreshAttendance(), 1500);
+}
+
+function showNotif(name, status, conf, time) {
+  const isHadir = status === 'HADIR';
+  const n = document.getElementById('notif');
+  n.className = 'notif show ' + (isHadir ? 'hadir' : 'unknown');
+  document.getElementById('notif-name').textContent = name;
+  document.getElementById('notif-status').textContent = isHadir
+    ? `${name} HADIR`
+    : `${name} — Di Luar Area / Tanpa GPS`;
+  document.getElementById('notif-time').textContent = formatTime(time) + ' · Conf: ' + conf + '%';
+  setTimeout(() => { n.classList.remove('show'); }, 6000);
+}
+
+function showUnknown() {
+  scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 3000);
+  const n = document.getElementById('notif');
+  n.className = 'notif show unknown';
+  document.getElementById('notif-name').textContent = 'TIDAK DIKENAL';
+  document.getElementById('notif-status').textContent = 'Wajah tidak ada di database';
+  document.getElementById('notif-time').textContent = formatTime(new Date());
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
+}
+
+// ─── Registration ─────────────────────────────────────────────────────────────
+async function captureAndRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const role = document.getElementById('reg-role').value.trim();
+  if (!name) { showToast('Nama wajib diisi!', 'error'); return; }
+  if (!role) { showToast('Pilih divisi terlebih dahulu!', 'error'); return; }
+  const vid = document.getElementById('video-reg');
+  if (!vid.videoWidth) { showToast('Kamera belum siap!', 'error'); return; }
+  showToast('Mengambil descriptor wajah...', '');
+  try {
+    const samples = [];
+    for (let i = 0; i < 3; i++) {
+      const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks(true).withFaceDescriptor();
+      if (det) samples.push(Array.from(det.descriptor));
+      await new Promise(r => setTimeout(r, 400));
+    }
+    if (samples.length === 0) { showToast('Wajah tidak terdeteksi! Pastikan pencahayaan cukup.', 'error'); return; }
+    const id = 'USR-' + Date.now();
+
+    const existing = faceDb.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing >= 0) {
+      faceDb[existing].descriptors = (faceDb[existing].descriptors || []).concat(samples);
+      faceDb[existing].role = role;
+    } else {
+      faceDb.push({ name, id, role, descriptors: samples, registeredAt: new Date().toISOString() });
+    }
+    localStorage.setItem('facedb', JSON.stringify(faceDb));
+    renderDb(); updateStats();
+    showToast(`✓ ${name} didaftarkan. Mengirim ke Sheets...`, 'success');
+    await sendPersonToSheets({ name, id, role, descriptors: samples });
+    showToast(`✓ ${name} tersinkron ke Google Sheets!`, 'success');
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-role').selectedIndex = 0;
+    setTimeout(() => refreshFromSheets(), 1500);
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+// ─── UI Render ────────────────────────────────────────────────────────────────
+function showTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+function renderDb() {
+  const list = document.getElementById('db-list');
+  document.getElementById('db-count').textContent = faceDb.length;
+  if (faceDb.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--text3);font-family:\'Space Mono\',monospace;padding:8px 0;">Belum ada data. Daftarkan wajah via tab DAFTAR.</div>';
+    return;
+  }
+  list.innerHTML = faceDb.map((p, i) => `
+    <div class="db-item">
+      <div class="avatar">${p.name.charAt(0).toUpperCase()}</div>
+      <div class="db-info">
+        <div class="db-name">${p.name}</div>
+        <div class="db-meta">${p.role || '—'} · ${(p.descriptors || []).length} sampel</div>
+      </div>
+      <button class="db-del" onclick="deletePerson(${i})" title="Hapus">✕</button>
+    </div>`).join('');
+}
+
+function deletePerson(i) {
+  if (!confirm(`Hapus ${faceDb[i].name} dari database?`)) return;
+  faceDb.splice(i, 1);
+  localStorage.setItem('facedb', JSON.stringify(faceDb));
+  renderDb(); updateStats();
+  showToast('Data dihapus dari device ini.', '');
+}
+
+function renderLog() {
+  const tbody = document.getElementById('log-body');
+  const today = getLocalDate();
+  const todayLog = attendanceLog.filter(e => e.date === today);
+  document.getElementById('log-badge').textContent = todayLog.length + ' ENTRI';
+  if (todayLog.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">⬡</div>Belum ada absensi hari ini.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = todayLog.map(e => {
+    const isHadir = e.status === 'HADIR';
+    const pillClass = isHadir ? 'hadir' : 'tidak-hadir';
+    const locCell = e.mapsLink
+      ? `<a href="${e.mapsLink}" target="_blank" rel="noopener noreferrer" class="loc-link">📍 Maps${e.distance !== null && e.distance !== undefined ? ` (${e.distance}m)` : ''}</a>`
+      : '<span class="loc-none">—</span>';
+    return `<tr>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;">${e.time}</td>
+      <td class="name-cell">${e.name}</td>
+      <td style="color:var(--text3);">${e.role || '—'}</td>
+      <td><span class="pill ${pillClass}">${e.status}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text3);">${e.confidence}%</td>
+      <td>${locCell}</td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStats() {
+  const today = getLocalDate();
+  const todayLog = attendanceLog.filter(e => e.date === today);
+  const hadirLog = todayLog.filter(e => e.status === 'HADIR');
+  const hadirUniq = new Set(hadirLog.map(e => e.id));
+  document.getElementById('stat-hadir').textContent = hadirUniq.size;
+  document.getElementById('stat-total').textContent = faceDb.length;
+  document.getElementById('stat-scan').textContent = todayLog.length;
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+renderDb(); renderLog(); updateStats();
+updateAdminUI();
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof faceapi !== 'undefined') loadModels();
+  else {
+    const check = setInterval(() => {
+      if (typeof faceapi !== 'undefined') { clearInterval(check); loadModels(); }
+    }, 300);
+  }
+});
+</script>
+</body>
+</html>
