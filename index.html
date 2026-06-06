@@ -113,6 +113,7 @@
   .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-family: var(--mono); letter-spacing: 0.05em; font-weight: 700; }
   .pill.hadir { background: rgba(45,212,232,.12); color: var(--accent); border: 1px solid rgba(45,212,232,.25); }
   .pill.tidak-hadir { background: rgba(255,77,106,.12); color: var(--red); border: 1px solid rgba(255,77,106,.25); }
+  .pill.terlambat { background: rgba(245,196,81,.12); color: var(--amber); border: 1px solid rgba(245,196,81,.25); }
   td.name-cell { color: var(--text); font-weight: 600; }
   .empty-state { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; }
   .empty-state .icon { font-size: 32px; margin-bottom: 8px; opacity: .4; }
@@ -484,13 +485,114 @@
 }
 
 /* Style untuk notifikasi sudah absen (Warna Amber/Kuning) */
-.notif.duplicate { 
-  border-color: var(--amber); 
-  background: rgba(245,196,81,0.07); 
+.notif.duplicate {
+  border-color: var(--amber);
+  background: rgba(245,196,81,0.07);
 }
-.notif.duplicate .notif-name { 
-  color: var(--amber); 
+.notif.duplicate .notif-name {
+  color: var(--amber);
 }
+.notif.terlambat { border-color: var(--amber); background: rgba(245,196,81,0.07); }
+.notif.terlambat .notif-name { color: var(--amber); }
+
+.notif.spam {
+  background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+  border-left: 6px solid #D97706;
+}
+
+.notif.spam #notif-name {
+  color: #78350F;
+}
+
+.notif.spam #notif-status {
+  color: #92400E;
+  font-weight: 700;
+}
+
+.notif.spam #notif-time {
+  color: #A16207;
+}
+
+.notif.late {
+  background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%);
+  border-left: 6px solid #C2410C;
+}
+
+.notif.late #notif-name {
+  color: #7C2D12;
+}
+
+.notif.late #notif-status {
+  color: #9A3412;
+  font-weight: 700;
+}
+
+.notif.late #notif-time {
+  color: #C2410C;
+}
+
+.notif.absent {
+  background: linear-gradient(135deg, #F87171 0%, #DC2626 100%);
+  border-left: 6px solid #B91C1C;
+}
+
+.notif.absent #notif-name {
+  color: #7F1D1D;
+}
+
+.notif.absent #notif-status {
+  color: #991B1B;
+  font-weight: 700;
+}
+
+.notif.absent #notif-time {
+  color: #B91C1C;
+}
+
+.notif.present {
+  background: linear-gradient(135deg, #34D399 0%, #059669 100%);
+  border-left: 6px solid #047857;
+}
+
+.notif.present #notif-name {
+  color: #064E3B;
+}
+
+.notif.present #notif-status {
+  color: #065F46;
+  font-weight: 700;
+}
+
+.notif.present #notif-time {
+  color: #047857;
+}
+
+.notif.spam { background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%); border-left: 6px solid #D97706; }
+.notif.spam #notif-name, .notif.spam #notif-status, .notif.spam #notif-time { color: #78350F; }
+
+.notif.late { background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%); border-left: 6px solid #C2410C; }
+.notif.late #notif-name, .notif.late #notif-status, .notif.late #notif-time { color: #7C2D12; font-weight: 700; }
+
+.notif.present { background: linear-gradient(135deg, #34D399 0%, #059669 100%); border-left: 6px solid #047857; }
+.notif.present #notif-name, .notif.present #notif-status, .notif.present #notif-time { color: #064E3B; font-weight: 700; }
+
+.notif.absent { background: linear-gradient(135deg, #F87171 0%, #DC2626 100%); border-left: 6px solid #B91C1C; }
+.notif.absent #notif-name, .notif.absent #notif-status, .notif.absent #notif-time { color: #7F1D1D; font-weight: 700; }
+
+/* Toggle Tombol Absen Datang/Pulang */
+.scan-type-toggle { display: flex; gap: 8px; margin: 12px 16px 0; }
+.type-btn { flex: 1; padding: 10px 0; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+.type-btn.active { background: rgba(45,212,232,0.15); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px rgba(45,212,232,0.2); }
+.type-btn.active.pulang { background: rgba(245,196,81,0.15); border-color: var(--amber); color: var(--amber); box-shadow: 0 0 10px rgba(245,196,81,0.2); }
+
+/* Warna Pill untuk Type dan Status Pulang */
+.pill.type.datang { background: rgba(45,212,232,.12); color: var(--accent); border: 1px solid rgba(45,212,232,.25); }
+.pill.type.pulang { background: rgba(245,196,81,.12); color: var(--amber); border: 1px solid rgba(245,196,81,.25); }
+.pill.pulang { background: rgba(245,196,81,.12); color: var(--amber); border: 1px solid rgba(245,196,81,.25); }
+
+/* Popup Notifikasi Pulang */
+.notif.pulang { background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%); border-left: 6px solid #D97706; }
+.notif.pulang #notif-name, .notif.pulang #notif-status, .notif.pulang #notif-time { color: #78350F; font-weight: 700; }
 
 </style>
 </head>
@@ -531,11 +633,20 @@
         <div class="status-dot" id="status-dot"></div>
         <div class="status-text" id="status-text">Menginisialisasi...</div>
       </div>
+      <div class="status-bar" style="margin-top:6px;padding:7px 14px;">
+        <div class="status-dot warn" id="gps-dot"></div>
+        <div class="status-text" id="gps-info" style="font-size:11px;">GPS: Mendeteksi...</div>
+        <button onclick="retryGPS()" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:9px;font-family:var(--mono);padding:2px 7px;border-radius:5px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">↻</button>
+      </div>
       <div class="notif" id="notif">
         <div class="notif-name" id="notif-name">—</div>
         <div class="notif-status" id="notif-status">—</div>
         <div class="notif-time" id="notif-time">—</div>
       </div>
+            <div class="scan-type-toggle">
+              <button class="type-btn active" id="btn-type-datang" onclick="setScanType('DATANG')">🟢 ABSEN DATANG</button>
+              <button class="type-btn pulang" id="btn-type-pulang" onclick="setScanType('PULANG')">🟠 ABSEN PULANG</button>
+            </div>
       <button class="btn-primary" id="btn-scan" onclick="toggleScan()" disabled>MULAI SCAN</button>
       <div style="height:12px;"></div>
     </div>
@@ -656,7 +767,7 @@
       <div class="stats">
         <div class="stat-card"><div class="stat-label">HADIR HARI INI</div><div class="stat-val green" id="stat-hadir">0</div></div>
         <div class="stat-card"><div class="stat-label">TERDAFTAR</div><div class="stat-val amber" id="stat-total">0</div></div>
-        <div class="stat-card"><div class="stat-label">TOTAL ABSENSI</div><div class="stat-val" id="stat-scan">0</div></div>
+        <div class="stat-card"><div class="stat-label">SUDAH PULANG</div><div class="stat-val amber" id="stat-scan">0</div></div>
       </div>
       <div class="log-card">
         <div class="log-head">
@@ -669,7 +780,7 @@
         <div class="log-table-wrap">
           <table>
             <thead>
-              <tr><th>WAKTU</th><th>NAMA</th><th>DEVISI</th><th>STATUS</th><th>CONFIDENCE</th><th>LOKASI</th></tr>
+              <tr><th>WAKTU</th><th>NAMA</th><th>DEVISI</th><th>TYPE</th><th>STATUS</th><th>CONFIDENCE</th><th>LOKASI</th></tr>
             </thead>
             <tbody id="log-body">
               <tr><td colspan="6"><div class="empty-state"><div class="icon">⬡</div>Belum ada absensi. Mulai scan wajah untuk mencatat kehadiran.</div></td></tr>
@@ -695,6 +806,10 @@
             <input class="geofence-input" type="number" id="geo-lat" placeholder="-6.2000000" step="0.0000001">
           </div>
           <div class="geofence-field">
+            <label>TENGAT WAKTU (HH:MM)</label>
+            <input class="geofence-input" type="time" id="geo-deadline" value="14:00">
+          </div>
+          <div class="geofence-field">
             <label>LONGITUDE PUSAT</label>
             <input class="geofence-input" type="number" id="geo-lng" placeholder="106.8160000" step="0.0000001">
           </div>
@@ -706,7 +821,7 @@
         <div class="geofence-actions">
           <button class="btn-geo-map" onclick="openMapPicker()">🗺️ PILIH DI PETA</button>
           <button class="btn-geo-loc" onclick="useMyLocation()">📍 LOKASI SAYA</button>
-          <button class="btn-geo-save" onclick="saveGeofence()">SIMPAN</button>
+          <button class="btn-geo-save" onclick="saveGeofenceAndDeadline()">SIMPAN KONFIGURASI</button>
           <button class="btn-geo-del" id="btn-geo-del" onclick="deleteGeofence()">🗑 HAPUS</button>
         </div>
         <div class="geo-status" id="geo-status">Belum ada konfigurasi geofence. Isi koordinat pusat dan simpan.</div>
@@ -749,7 +864,7 @@
 <div id="toast"></div>
 
 <script>
-const SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG_bMm5X-SVx64hGTRoInyJQFw1YeJbnotBzt_9ptSWKVRLRDOC_qLilelyOnnGX5Edw/exec';
+const SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwKBoR0_akWjRNklAVY5zuh_FfZU31DHlwZMhjAv2Qk8-ejH4g_UW7D1AgInmkN87WU2Q/exec';
 const ADMIN_PASS = 'GS26JAYA';
 const API_SECRET = '0345AMGS@^';
 
@@ -762,8 +877,22 @@ let detectionInterval = null;
 let scanCooldown = false;
 let regPreviewInterval = null;
 
+let currentScanType = 'DATANG';
+
+function setScanType(type) {
+  currentScanType = type;
+  document.getElementById('btn-type-datang').classList.toggle('active', type === 'DATANG');
+  document.getElementById('btn-type-pulang').classList.toggle('active', type === 'PULANG');
+  
+  if (type === 'PULANG') {
+    setStatus('warn', 'Mode ABSEN PULANG aktif. Hadapkan wajah ke kamera.');
+  } else {
+    setStatus('ok', 'Mode ABSEN DATANG aktif. Hadapkan wajah ke kamera.');
+  }
+}
 let currentPos = null;
-let geofence = { centerLat: null, centerLng: null, radiusM: 100 };
+let gpsWatchId = null;
+let geofence = { centerLat: null, centerLng: null, radiusM: 100, deadline: '14:00' };
 let mode = 'visitor';
 
 let attendanceRefreshInterval = null;
@@ -779,19 +908,21 @@ let previewMarker = null;
 let previewCircle = null;
 
 // Layer peta (Gratis, Tanpa API Key)
-const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles &copy; Esri',
-  maxZoom: 19
-});
+// Factory — HARUS buat instance baru tiap map (Leaflet tidak izinkan 1 layer di 2 map sekaligus)
+function newSatLayer() {
+  return L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri', maxZoom: 19
+  });
+}
+function newStreetLayer() {
+  return L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+  });
+}
 
 function getAuthPayload(data = {}) {
   return { ...data, token: API_SECRET };
 }
-
-const streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap &copy; CARTO',
-  maxZoom: 19
-});
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
 function getLocalDate(d = new Date()) {
@@ -835,39 +966,86 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 // ─── Geolocation ─────────────────────────────────────────────────────────────
 function initGeolocation() {
   if (!navigator.geolocation) {
-    showToast('GPS tidak tersedia di browser ini', '');
+    updateGpsBar(false, 'GPS tidak tersedia di browser ini');
     return;
   }
-  navigator.geolocation.getCurrentPosition(
+  updateGpsBar(null, 'Mendeteksi lokasi GPS...');
+  tryWatchPosition(true);
+}
+
+function tryWatchPosition(highAccuracy) {
+  if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+  gpsWatchId = navigator.geolocation.watchPosition(
     pos => {
-      currentPos = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        accuracy: Math.round(pos.coords.accuracy)
-      };
+      currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: Math.round(pos.coords.accuracy) };
+      updateDistanceDisplay();
     },
     err => {
-      setStatus('warn', 'Izin lokasi ditolak — absensi tetap jalan tanpa GPS');
-      setTimeout(() => setStatus('ok', 'Kamera siap. Tekan MULAI SCAN.'), 5000);
+      if (err.code === 3 && highAccuracy) {
+        // TIMEOUT — coba ulang dengan akurasi rendah (WiFi / IP)
+        updateGpsBar(null, 'Coba mode jaringan...');
+        tryWatchPosition(false);
+      } else if (err.code === 1) {
+        // PERMISSION_DENIED
+        updateGpsBar(false, 'Izin ditolak — klik ikon 🔒 lalu aktifkan Lokasi');
+      } else {
+        updateGpsBar(false, 'GPS tidak tersedia — tekan ↻ untuk coba lagi');
+      }
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { enableHighAccuracy: highAccuracy, maximumAge: highAccuracy ? 3000 : 30000, timeout: highAccuracy ? 25000 : 30000 }
   );
+}
+
+function retryGPS() {
+  currentPos = null;
+  updateGpsBar(null, 'Mencoba ulang GPS...');
+  tryWatchPosition(true);
+}
+
+function updateGpsBar(ok, text) {
+  const dot = document.getElementById('gps-dot');
+  const info = document.getElementById('gps-info');
+  if (!dot || !info) return;
+  info.textContent = 'GPS: ' + text;
+  dot.className = 'status-dot' + (ok === true ? ' ok' : ok === false ? ' err' : ' warn');
+}
+
+function updateDistanceDisplay() {
+  if (!currentPos) { updateGpsBar(null, 'mendeteksi...'); return; }
+  if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+    const dist = Math.round(distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng));
+    const inside = dist <= geofence.radiusM;
+    const distTxt = dist < 1000 ? `${dist}m` : `${(dist / 1000).toFixed(1)}km`;
+    // GPS dianggap tidak reliabel jika akurasi 3x lebih buruk dari radius
+    const gpsUnreliable = currentPos.accuracy > geofence.radiusM * 3;
+    const accuracyWarn = currentPos.accuracy > geofence.radiusM;
+    if (gpsUnreliable) {
+      // Akurasi sangat buruk — kemungkinan posisi dari WiFi/IP, tidak bisa dipercaya
+      updateGpsBar(null, `±${currentPos.accuracy}m · GPS tidak akurat (WiFi/IP) — absensi tetap bisa dilakukan`);
+    } else if (accuracyWarn) {
+      const label = inside ? `✓ Dalam zona` : `${distTxt} dari zona`;
+      updateGpsBar(inside ? true : null, `±${currentPos.accuracy}m · ${label} ⚠ akurasi rendah`);
+    } else {
+      const label = inside ? `✓ Dalam zona (${dist}m)` : `${distTxt} dari zona`;
+      updateGpsBar(inside, `±${currentPos.accuracy}m · ${label}`);
+    }
+  } else {
+    updateGpsBar(true, `±${currentPos.accuracy}m`);
+  }
 }
 
 function refreshGPS() {
   return new Promise(resolve => {
     if (!navigator.geolocation) { resolve(); return; }
+    // watchPosition sudah menjaga currentPos tetap segar; ini hanya fallback cepat
     navigator.geolocation.getCurrentPosition(
       pos => {
-        currentPos = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: Math.round(pos.coords.accuracy)
-        };
+        currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: Math.round(pos.coords.accuracy) };
+        updateDistanceDisplay();
         resolve();
       },
       () => resolve(),
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 8000 }
     );
   });
 }
@@ -875,19 +1053,25 @@ function refreshGPS() {
 // ─── Model Loading ────────────────────────────────────────────────────────────
 async function loadModels() {
   initGeolocation();
-  const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+  const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+  // 3 model wajib — faceExpressionNet tidak dipakai, dihapus agar loading lebih cepat
   const steps = [
-    { fn: () => faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL), label: 'MEMUAT DETEKTOR...', pct: 15 },
-    { fn: () => faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL), label: 'MEMUAT LANDMARK...', pct: 30 },
-    { fn: () => faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL), label: 'MEMUAT PENGENAL WAJAH...', pct: 45 },
-    { fn: () => faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL), label: 'FINALISASI MODEL...', pct: 60 },
+    { fn: () => faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL), label: 'MEMUAT DETEKTOR...', pct: 25, required: true },
+    { fn: () => faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL), label: 'MEMUAT LANDMARK...', pct: 50, required: true },
+    { fn: () => faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL), label: 'MEMUAT PENGENAL WAJAH...', pct: 70, required: true },
   ];
+  let criticalFailed = 0;
   for (const s of steps) {
     document.getElementById('load-msg').textContent = s.label;
     document.getElementById('load-fill').style.width = s.pct + '%';
-    try { await s.fn(); } catch(e) { console.warn('Model load warning:', e); }
+    try { await s.fn(); console.log('✓ Model OK:', s.label); }
+    catch(e) { console.error('Gagal muat model:', s.label, e); if (s.required) criticalFailed++; }
   }
-  modelsLoaded = true;
+  modelsLoaded = criticalFailed === 0;
+  if (!modelsLoaded) {
+    document.getElementById('load-msg').textContent = '⚠️ Model AI gagal dimuat. Refresh halaman & cek koneksi internet.';
+    console.error('Model kritis gagal dimuat. Face detection tidak berfungsi.');
+  }
 
   document.getElementById('load-msg').textContent = 'MENYINKRONKAN DATABASE...';
   document.getElementById('load-fill').style.width = '75%';
@@ -992,12 +1176,21 @@ async function refreshAttendance() {
 
 async function sendToSheets(entry) {
   try {
-    await fetch(SHEETS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(getAuthPayload({ action: 'absensi', ...entry })) // Pakai helper
+    console.log("Mengirim data ke Sheets:", entry); // 🔥 Debug 1: Cek apakah data terkirim
+    
+    const response = await fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(getAuthPayload({ action: 'absensi', ...entry }))
     });
-  } catch(e) { console.warn('Sheets send error:', e); }
+    
+    const result = await response.json();
+    console.log("Server Response:", result); // 🔥 Debug 2: Cek balasan server
+    return result;
+  } catch(e) { 
+    console.error('Sheets send error:', e); 
+    return null;
+  }
 }
 
 async function sendPersonToSheets(person) {
@@ -1064,25 +1257,27 @@ function useMyLocation() {
   updatePreviewMap();
 }
 
-async function saveGeofence() {
+async function saveGeofenceAndDeadline() {
   const lat = parseFloat(document.getElementById('geo-lat').value);
   const lng = parseFloat(document.getElementById('geo-lng').value);
   const radius = parseInt(document.getElementById('geo-radius').value);
+  const deadline = document.getElementById('geo-deadline').value || '14:00';
   if (isNaN(lat) || isNaN(lng) || isNaN(radius) || radius < 1) {
     showToast('Isi semua field dengan nilai yang valid!', 'error');
     return;
   }
-  geofence = { centerLat: lat, centerLng: lng, radiusM: radius };
+  geofence = { centerLat: lat, centerLng: lng, radiusM: radius, deadline };
   updateGeofenceBadge();
-  document.getElementById('geo-status').textContent = `Aktif: (${lat.toFixed(5)}, ${lng.toFixed(5)}) — radius ${radius} m`;
+  updateDistanceDisplay();
+  document.getElementById('geo-status').textContent = `Aktif: (${lat.toFixed(5)}, ${lng.toFixed(5)}) — radius ${radius} m · deadline ${deadline}`;
 
   try {
     await fetch(SHEETS_SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(getAuthPayload({ action: 'setGeofence', centerLat: lat, centerLng: lng, radiusM: radius }))
+      body: JSON.stringify(getAuthPayload({ action: 'setGeofence', centerLat: lat, centerLng: lng, radiusM: radius, deadline }))
     });
-    showToast('Geofence tersimpan ke Sheets!', 'success');
+    showToast('Geofence & deadline tersimpan ke Sheets!', 'success');
   } catch(e) {
     showToast('Tersimpan lokal. Gagal sync ke Sheets.', '');
   }
@@ -1090,10 +1285,11 @@ async function saveGeofence() {
 
 async function deleteGeofence() {
   if (!confirm('Hapus koordinat geofence?')) return;
-  geofence = { centerLat: null, centerLng: null, radiusM: 100 };
+  geofence = { centerLat: null, centerLng: null, radiusM: 100, deadline: '14:00' };
   document.getElementById('geo-lat').value = '';
   document.getElementById('geo-lng').value = '';
   document.getElementById('geo-radius').value = 100;
+  document.getElementById('geo-deadline').value = '14:00';
   updateGeofenceBadge();
   document.getElementById('geo-status').textContent = 'Geofence dihapus.';
   clearPreviewMap();
@@ -1121,20 +1317,26 @@ async function getGeofenceFromSheets() {
     if (json.status === 'ok' && json.geofence) {
       const g = json.geofence;
       if (g.centerLat !== null && g.centerLng !== null && !isNaN(g.centerLat) && !isNaN(g.centerLng)) {
-        geofence = { 
-          centerLat: parseFloat(g.centerLat), 
-          centerLng: parseFloat(g.centerLng), 
-          radiusM: parseInt(g.radiusM) || 100 
+        geofence = {
+          centerLat: parseFloat(g.centerLat),
+          centerLng: parseFloat(g.centerLng),
+          radiusM: parseInt(g.radiusM) || 100,
+          deadline: g.deadline || '14:00'
         };
         if (mode === 'admin') {
           document.getElementById('geo-lat').value = geofence.centerLat;
           document.getElementById('geo-lng').value = geofence.centerLng;
           document.getElementById('geo-radius').value = geofence.radiusM;
+          document.getElementById('geo-deadline').value = geofence.deadline;
           document.getElementById('geo-status').textContent =
-            `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m`;
+            `Dimuat dari Sheets: (${geofence.centerLat}, ${geofence.centerLng}) — radius ${geofence.radiusM} m · deadline ${geofence.deadline}`;
           updateGeofenceBadge();
           updatePreviewMap();
         }
+        updateDistanceDisplay();
+      } else {
+        geofence.deadline = g.deadline || '14:00';
+        if (mode === 'admin') document.getElementById('geo-deadline').value = geofence.deadline;
       }
     }
   } catch(e) {
@@ -1142,10 +1344,53 @@ async function getGeofenceFromSheets() {
   }
 }
 
+function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Radius bumi dalam meter
+  const φ1 = lat1 * Math.PI/180;
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)*Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Hasil dalam meter
+}
+
+function processAbsensi(userLat, userLng, geofenceData) {
+  // Hitung jarak user ke pusat geofence
+  const distance = getDistanceInMeters(userLat, userLng, geofenceData.centerLat, geofenceData.centerLng);
+  
+  // Cek apakah user di dalam radius?
+  const isInsideZone = distance <= geofenceData.radiusM;
+  
+  // Tentukan status yang akan dikirim ke code.gs
+  const statusAbsen = isInsideZone ? 'HADIR' : 'TIDAK HADIR';
+
+  console.log(`Jarak: ${Math.round(distance)}m | Status: ${statusAbsen}`);
+
+  // Kirim data ke backend (code.gs)
+  const payload = {
+    token: '0345AMGS@^',
+    action: 'absensi',
+    name: 'Nama User', // Sesuaikan
+    id: 'ID User',     // Sesuaikan
+    date: new Date().toISOString().split('T')[0],
+    time: new Date().toTimeString().split(' ')[0],
+    status: statusAbsen, // <-- KUNCI UTAMA: Kirim HADIR atau TIDAK HADIR
+    type: 'DATANG',
+    lat: userLat,
+    lng: userLng,
+    distance: Math.round(distance),
+    // ... tambahkan data lain seperti confidence, dll
+  };
+
+  // Lakukan fetch POST ke web app URL Anda
+  // fetch(url, { method: 'POST', body: JSON.stringify(payload) })
+}
+
 function updateGeofenceBadge() {
   const badge = document.getElementById('geo-active-badge');
   if (geofence.centerLat !== null) {
-    badge.textContent = `AKTIF · r=${geofence.radiusM}m`;
+    badge.textContent = `AKTIF · r=${geofence.radiusM}m · ${geofence.deadline || '—'}`;
     badge.classList.remove('off');
   } else {
     badge.textContent = 'BELUM DI-SET';
@@ -1166,11 +1411,12 @@ function updatePreviewMap() {
   }
 
   container.classList.remove('empty');
-  container.innerHTML = '';
-
   if (!previewMap) {
-    previewMap = L.map(container, { zoomControl: true, attributionControl: false, layers: [satelliteLayer] }).setView([lat, lng], 17);
-    setTimeout(() => previewMap.invalidateSize(), 100);
+    container.innerHTML = ''; // bersihkan hanya saat pertama kali
+    previewMap = L.map(container, { zoomControl: true, attributionControl: false })
+      .setView([lat, lng], 17);
+    newSatLayer().addTo(previewMap); // instance baru agar tidak konflik dengan pickerMap
+    setTimeout(() => previewMap.invalidateSize(), 150);
   } else {
     setTimeout(() => previewMap.invalidateSize(), 50);
   }
@@ -1233,15 +1479,17 @@ function openMapPicker() {
 }
 
 function initPickerMap(lat, lng, radius) {
-  pickerMap = L.map('picker-map', { 
-    zoomControl: true, 
-    layers: [satelliteLayer] // Default ke Satelit agar lebih detail
+  const satLyr = newSatLayer();
+  const streetLyr = newStreetLayer();
+
+  pickerMap = L.map('picker-map', {
+    zoomControl: true,
+    layers: [satLyr]
   }).setView([lat, lng], 17);
 
-  // Tambahkan kontrol untuk ganti antara Satelit dan Peta Jalan
   const baseMaps = {
-    "🛰️ Satelit (Detail)": satelliteLayer,
-    "🗺️ Peta Jalan": streetLayer
+    "🛰️ Satelit (Detail)": satLyr,
+    "🗺️ Peta Jalan": streetLyr
   };
   L.control.layers(baseMaps, null, { position: 'topright' }).addTo(pickerMap);
 
@@ -1407,15 +1655,37 @@ document.addEventListener('click', (e) => {
 // ─── Camera ──────────────────────────────────────────────────────────────────
 async function initCameras() {
   try {
-    streamScan = await navigator.mediaDevices.getUserMedia({ video: { width: 308, height: 231, facingMode: 'user' } });
-    document.getElementById('video').srcObject = streamScan;
-    streamReg = await navigator.mediaDevices.getUserMedia({ video: { width: 280, height: 210, facingMode: 'user' } });
-    document.getElementById('video-reg').srcObject = streamReg;
+    // Satu stream dibagi ke dua video — cegah konflik kamera di Android/mobile
+    // Constraints pakai 'ideal' agar fleksibel di semua device
+    streamScan = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    streamReg = streamScan; // share stream yang sama
+
+    const vidScan = document.getElementById('video');
+    const vidReg  = document.getElementById('video-reg');
+    vidScan.srcObject = streamScan;
+    vidReg.srcObject  = streamScan;
+
+    // Force play — wajib di beberapa mobile browser agar tidak stuck hitam
+    await Promise.all([
+      vidScan.play().catch(() => {}),
+      vidReg.play().catch(() => {})
+    ]);
+
+    // Tunggu video benar-benar streaming sebelum enable tombol scan
+    await new Promise(resolve => {
+      if (vidScan.readyState >= 2) { resolve(); return; }
+      vidScan.addEventListener('loadeddata', resolve, { once: true });
+      setTimeout(resolve, 5000); // fallback: max 5 detik
+    });
+
     setStatus('ok', 'Kamera siap. Tekan MULAI SCAN.');
     document.getElementById('btn-scan').disabled = false;
     startRegPreview();
   } catch (e) {
-    setStatus('err', 'Akses kamera ditolak: ' + e.message);
+    setStatus('err', 'Kamera gagal: ' + e.message);
+    console.error('Camera init error:', e.name, e.message);
   }
 }
 
@@ -1433,7 +1703,7 @@ function startRegPreview() {
     if (!modelsLoaded || !vid.videoWidth) return;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     try {
-      const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 })).withFaceLandmarks(true);
+      const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true);
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (det) {
@@ -1450,7 +1720,11 @@ function startRegPreview() {
 // ─── Scan ────────────────────────────────────────────────────────────────────
 function toggleScan() { if (!isScanning) startScan(); else stopScan(); }
 function startScan() {
-  if (!modelsLoaded) return;
+  if (!modelsLoaded) {
+    setStatus('err', 'Model AI belum siap. Tunggu loading selesai atau refresh halaman.');
+    showToast('Model AI belum siap. Cek koneksi internet & refresh.', 'error');
+    return;
+  }
   isScanning = true;
   document.getElementById('btn-scan').textContent = 'HENTIKAN SCAN';
   document.getElementById('scan-line').classList.add('running');
@@ -1466,20 +1740,34 @@ function stopScan() {
   document.getElementById('overlay').getContext('2d').clearRect(0, 0, 999, 999);
 }
 
+function checkDeadlineStatus() {
+  if (!geofence.deadline) return 'HADIR';
+  const now = new Date();
+  const [h, m] = geofence.deadline.split(':').map(Number);
+  return (now.getHours() * 60 + now.getMinutes()) <= (h * 60 + m) ? 'HADIR' : 'TIDAK HADIR';
+}
+
 async function runDetection() {
   const vid = document.getElementById('video');
   const canvas = document.getElementById('overlay');
-  if (!vid.videoWidth) return;
-  canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+  if (!vid.videoWidth || vid.readyState < 2) return;
+  const displaySize = { width: vid.videoWidth, height: vid.videoHeight };
+  faceapi.matchDimensions(canvas, displaySize);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   try {
-    const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 })).withFaceLandmarks(true).withFaceDescriptor();
-    if (!det) { setStatus('warn', 'Wajah tidak terdeteksi...'); return; }
+    const det = await faceapi.detectSingleFace(vid, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 })).withFaceLandmarks(true).withFaceDescriptor();
+    if (!det) { setStatus('warn', 'Wajah tidak terdeteksi... (Pastikan cahaya cukup & wajah menghadap kamera)'); return; }
     ctx.strokeStyle = '#2DD4E8'; ctx.lineWidth = 2;
     ctx.strokeRect(det.detection.box.x, det.detection.box.y, det.detection.box.width, det.detection.box.height);
     if (faceDb.length === 0) { setStatus('warn', 'Database kosong. Daftarkan wajah terlebih dahulu!'); return; }
     if (scanCooldown) return;
+
+    // Jika geofence aktif tapi GPS belum tersedia, tahan proses absensi
+    if (!currentPos && geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+      setStatus('warn', '⚠️ GPS belum aktif. Aktifkan izin lokasi di browser lalu coba lagi.');
+      return;
+    }
 
     let bestMatch = null, bestDist = Infinity;
     for (const person of faceDb) {
@@ -1495,38 +1783,45 @@ async function runDetection() {
       
       // === HITUNG STATUS BARU SEBELUM MENYIMPAN ===
       let newStatus = 'TIDAK HADIR';
+      let zoneDist = null;
       if (currentPos) {
         if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
-          const dist = distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng);
-          newStatus = dist <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
+          zoneDist = Math.round(distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng));
+          newStatus = zoneDist <= geofence.radiusM ? 'HADIR' : 'TIDAK HADIR';
         } else {
-          newStatus = 'HADIR'; // Fallback jika geofence belum di-set
+          newStatus = 'HADIR'; // Geofence belum dikonfigurasi — izinkan hadir
         }
       }
 
-      // === CEK LOGIKA ANTI-SPAM & UPDATE STATUS ===
-      const today = getLocalDate();
-      const existingLog = attendanceLog.find(log => log.id === bestMatch.id && log.date === today);
+            // === CEK LOGIKA ANTI-SPAM & UPDATE STATUS ===
+            const today = getLocalDate();
+            const existingLog = attendanceLog.find(log => log.id === bestMatch.id && log.date === today && log.type === currentScanType);
 
-      if (existingLog) {
-        // Kasus 1: Sudah HADIR, scan lagi -> TOLAK
-        if (existingLog.status === 'HADIR') {
-          showDuplicateNotif(bestMatch.name, false);
-          setStatus('warn', `⚠️ ${bestMatch.name} sudah absen (HADIR) hari ini.`);
-          scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
-          return; 
-        }
-        
-        // Kasus 2: Sebelumnya TIDAK HADIR, sekarang tetap TIDAK HADIR -> TOLAK
-        if (existingLog.status === 'TIDAK HADIR' && newStatus === 'TIDAK HADIR') {
-          showDuplicateNotif(bestMatch.name, true);
-          setStatus('warn', `️ ${bestMatch.name} sudah absen (Di Luar Area).`);
-          scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
-          return;
-        }
-        
-        // Kasus 3: Sebelumnya TIDAK HADIR, sekarang HADIR -> IZINKAN (Akan di-update di recordAttendance)
-      }
+              if (existingLog) {
+                // Jika status sudah final (HADIR, TERLAMBAT, atau PULANG), tolak scan ulang
+                if (existingLog.status === 'HADIR' || existingLog.status === 'TERLAMBAT' || existingLog.status === 'PULANG') {
+                  return; 
+                }
+
+              // 2. Jika sebelumnya TIDAK HADIR, cek apakah sekarang masih di luar zona?
+              let isInsideNow = true;
+              if (geofence.centerLat !== null && !isNaN(geofence.centerLat) && zoneDist !== null) {
+                isInsideNow = zoneDist <= geofence.radiusM;
+              }
+              
+              // Jika masih di luar zona, status tidak berubah. Tampilkan duplikat dan stop.
+              if (existingLog.status === 'TIDAK HADIR' && !isInsideNow) {
+                showDuplicateNotif(bestMatch.name, true);
+                setStatus('warn', `⚠️ ${bestMatch.name} masih di luar area.`);
+                scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
+                return;
+              }
+              
+              // 3. Jika lolos (misal: dari TIDAK HADIR sekarang masuk zona), izinkan recordAttendance berjalan.
+            }
+
+        // Kasus 3: TIDAK HADIR -> HADIR -> IZINKAN (update di recordAttendance)
+      
 
       // Jika lolos pengecekan, lanjutkan proses absen/update
       ctx.fillStyle = 'rgba(45,212,232,0.12)';
@@ -1534,8 +1829,11 @@ async function runDetection() {
       ctx.fillStyle = '#2DD4E8'; ctx.font = 'bold 13px Space Mono, monospace';
       ctx.fillText(bestMatch.name, det.detection.box.x, det.detection.box.y - 8);
       
-      recordAttendance(bestMatch, confidence, newStatus); // Kirim newStatus ke fungsi
-      setStatus('ok', `✓ ${bestMatch.name} dikenali (${confidence}%)`);
+      recordAttendance(bestMatch, confidence);
+      const zoneInfo = zoneDist !== null
+        ? (newStatus === 'HADIR' ? ` · ✓ dalam zona (${zoneDist}m)` : ` · ✕ luar zona (${zoneDist}m)`)
+        : '';
+      setStatus(newStatus === 'HADIR' ? 'ok' : 'warn', `✓ ${bestMatch.name} (${confidence}%)${zoneInfo}`);
     } else {
       ctx.strokeStyle = '#FF4D6A';
       ctx.fillStyle = 'rgba(255,77,106,0.1)';
@@ -1543,74 +1841,146 @@ async function runDetection() {
       showUnknown();
       setStatus('err', 'Wajah tidak dikenali dalam database.');
     }
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error('Detection error:', e);
+    setStatus('err', 'Error deteksi: ' + e.message + ' — coba refresh halaman.');
+  }
 }
 
-// ─── Attendance ───────────────────────────────────────────────────────────────
-async function recordAttendance(person, confidence, newStatus) {
+async function recordAttendance(person, confidence) {
   scanCooldown = true;
   setTimeout(() => { scanCooldown = false; }, 5000);
   await refreshGPS();
 
   const now = new Date();
   const todayStr = getLocalDate(now);
-
   let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
-  let status = newStatus || 'TIDAK HADIR';
 
   if (currentPos) {
-    lat = currentPos.lat;
-    lng = currentPos.lng;
-    accuracy = currentPos.accuracy;
+    lat = currentPos.lat; lng = currentPos.lng; accuracy = currentPos.accuracy;
     mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+    if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+      distance = Math.round(distanceMeters(lat, lng, geofence.centerLat, geofence.centerLng));
+    }
+  }
+
+  let isInsideZone = true;
+  let gpsSkipped = false;
+  if (geofence.centerLat !== null && !isNaN(geofence.centerLat) && distance !== null) {
+    // Jika akurasi GPS jauh lebih buruk dari radius (3x), posisi kemungkinan dari WiFi/IP
+    // dan tidak bisa dipercaya — cek zona dilewati agar volunteer tidak salah ditandai TIDAK HADIR
+    if (accuracy !== null && accuracy > geofence.radiusM * 3) {
+      isInsideZone = true;
+      gpsSkipped = true;
+    } else {
+      isInsideZone = distance <= geofence.radiusM;
+    }
+  }
+
+  // 🔥 LOGIKA STATUS BERDASARKAN TYPE (DATANG/PULANG)
+  let finalStatus;
+  if (currentScanType === 'PULANG') {
+    finalStatus = isInsideZone ? 'PULANG' : 'TIDAK HADIR'; // Absen pulang tidak cek deadline
+  } else {
+    if (!isInsideZone) finalStatus = 'TIDAK HADIR';
+    else if (geofence.deadline) {
+      const [h, m] = geofence.deadline.split(':').map(Number);
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      finalStatus = currentMinutes > (h * 60 + m) ? 'TERLAMBAT' : 'HADIR';
+    } else {
+      finalStatus = 'HADIR';
+    }
   }
 
   const entry = {
-    time: formatTime(now),
-    date: todayStr,
-    name: person.name,
-    id: person.id,
-    role: person.role,
-    status,
-    confidence,
-    ts: now.getTime(),
-    lat, lng, accuracy, distance, mapsLink
+    name: person.name, id: person.id, role: person.role, date: todayStr, time: formatTime(now),
+    ts: Date.now(), lat: lat, lng: lng, accuracy: accuracy, distance: distance, mapsLink: mapsLink,
+    confidence: confidence, type: currentScanType, status: finalStatus // 🔥 KIRIM TYPE
   };
 
-  // === LOGIKA UPDATE LOKAL ===
-  const existingIndex = attendanceLog.findIndex(log => log.id === person.id && log.date === todayStr);
+  attendanceLog.unshift({ ...entry, status: '...' });
+  localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
+  renderLog(); updateStats();
+
+  const serverResponse = await sendToSheets(entry);
   
-  if (existingIndex !== -1) {
-    // Update data yang sudah ada (kasus: Tidak Hadir -> Hadir)
-    attendanceLog[existingIndex] = { ...entry };
-    showToast(`✓ Status ${person.name} di-update menjadi HADIR!`, 'success');
+  // Update log lokal
+  const existingIndex = attendanceLog.findIndex(log => log.id === person.id && log.date === todayStr && log.type === currentScanType);
+  if (existingIndex !== -1) attendanceLog[existingIndex] = { ...entry, status: finalStatus };
+  
+  attendanceLog.sort((a, b) => b.ts - a.ts);
+  localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
+  renderLog(); updateStats();
+
+  // Tampilkan popup
+  if (serverResponse && serverResponse.action === 'spam_ignored') {
+    showSpamNotif(person.name);
+  } else if (currentScanType === 'PULANG') {
+    if (finalStatus === 'PULANG') showPulangNotif(person.name);
+    else showNotif(person.name, finalStatus, confidence, now);
   } else {
-    // Tambah data baru
-    attendanceLog.unshift(entry);
+    if (finalStatus === 'TERLAMBAT') showLateNotif(person.name, finalStatus);
+    else showNotif(person.name, finalStatus, confidence, now);
   }
   
-  // Sort agar yang terbaru selalu di atas
-  attendanceLog.sort((a, b) => b.ts - a.ts);
-
-  localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
-  showNotif(person.name, status, confidence, now);
-  renderLog();
-  updateStats();
-
-  await sendToSheets(entry);
   setTimeout(() => refreshAttendance(), 1500);
 }
 
-function showNotif(name, status, conf, time) {
-  const isHadir = status === 'HADIR';
+function showPulangNotif(name) {
   const n = document.getElementById('notif');
-  n.className = 'notif show ' + (isHadir ? 'hadir' : 'unknown');
+  n.className = 'notif show pulang';
   document.getElementById('notif-name').textContent = name;
-  document.getElementById('notif-status').textContent = isHadir
-    ? `${name} HADIR`
-    : `${name} — Di Luar Area / Tanpa GPS`;
-  document.getElementById('notif-time').textContent = formatTime(time) + ' · Conf: ' + conf + '%';
-  setTimeout(() => { n.classList.remove('show'); }, 6000);
+  document.getElementById('notif-status').textContent = `ABSEN PULANG - Sampai jumpa!`;
+  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Status: PULANG';
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
+}
+
+function showNotif(name, status, confidence, time) {
+  const n = document.getElementById('notif');
+  
+  // Tentukan class berdasarkan status
+  let notifClass = 'notif show';
+  if (status === 'TIDAK HADIR') {
+    notifClass += ' absent'; // Merah
+  } else if (status === 'TERLAMBAT') {
+    notifClass += ' late'; // Orange
+  } else {
+    notifClass += ' present'; // Hijau (default)
+  }
+  
+  n.className = notifClass;
+  document.getElementById('notif-name').textContent = name;
+  document.getElementById('notif-status').textContent = status;
+  document.getElementById('notif-time').textContent = formatTime(time) + ' · Confidence: ' + confidence + '%';
+  
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
+}
+
+function showSpamNotif(name) {
+  const n = document.getElementById('notif');
+  n.className = 'notif show spam';
+  document.getElementById('notif-name').textContent = name;
+  document.getElementById('notif-status').textContent = `${name} sudah terdata`;
+  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Tunggu 1 jam';
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
+}
+
+function showLateNotif(name, status) {
+  const n = document.getElementById('notif');
+  n.className = 'notif show late';
+  document.getElementById('notif-name').textContent = name;
+  document.getElementById('notif-status').textContent = `TERLAMBAT - Melewati batas waktu`;
+  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Status: ' + status;
+  setTimeout(() => { n.classList.remove('show'); }, 5000);
+}
+
+function showUnknown() {
+  const n = document.getElementById('notif');
+  n.className = 'notif show unknown';
+  document.getElementById('notif-name').textContent = 'WAJAH TIDAK DIKENALI';
+  document.getElementById('notif-status').textContent = 'Belum terdaftar dalam database';
+  document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Daftarkan diri via tab DAFTAR';
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
 }
 
 function showDuplicateNotif(name, isOutsideZone = false) {
@@ -1731,19 +2101,24 @@ function renderLog() {
   const todayLog = attendanceLog.filter(e => e.date === today);
   document.getElementById('log-badge').textContent = todayLog.length + ' ENTRI';
   if (todayLog.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="icon">⬡</div>Belum ada absensi hari ini.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">⬡</div>Belum ada absensi hari ini.</div></td></tr>';
     return;
   }
   tbody.innerHTML = todayLog.map(e => {
-    const isHadir = e.status === 'HADIR';
-    const pillClass = isHadir ? 'hadir' : 'tidak-hadir';
+    const typePill = e.type === 'PULANG' ? 'pulang' : 'datang';
+    const pillClass = e.status === 'HADIR' ? 'hadir' : 
+                      e.status === 'TERLAMBAT' ? 'terlambat' : 
+                      e.status === 'PULANG' ? 'pulang' : 'tidak-hadir';
+    
     const locCell = e.mapsLink
-      ? `<a href="${e.mapsLink}" target="_blank" rel="noopener noreferrer" class="loc-link">📍 Maps${e.distance !== null && e.distance !== undefined ? ` (${e.distance}m)` : ''}</a>`
+      ? `<a href="${e.mapsLink}" target="_blank" class="loc-link">📍 Maps${e.distance ? ` (${e.distance}m)` : ''}</a>`
       : '<span class="loc-none">—</span>';
+      
     return `<tr>
       <td style="font-family:'Space Mono',monospace;font-size:12px;">${e.time}</td>
       <td class="name-cell">${e.name}</td>
       <td style="color:var(--text3);">${e.role || '—'}</td>
+      <td><span class="pill type ${typePill}">${e.type || 'DATANG'}</span></td>
       <td><span class="pill ${pillClass}">${e.status}</span></td>
       <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text3);">${e.confidence}%</td>
       <td>${locCell}</td>
@@ -1754,11 +2129,15 @@ function renderLog() {
 function updateStats() {
   const today = getLocalDate();
   const todayLog = attendanceLog.filter(e => e.date === today);
-  const hadirLog = todayLog.filter(e => e.status === 'HADIR');
-  const hadirUniq = new Set(hadirLog.map(e => e.id));
-  document.getElementById('stat-hadir').textContent = hadirUniq.size;
+  
+  // Hitung yang sudah datang (status HADIR/TERLAMBAT)
+  const datangUniq = new Set(todayLog.filter(e => e.type === 'DATANG' && (e.status === 'HADIR' || e.status === 'TERLAMBAT')).map(e => e.id));
+  // Hitung yang sudah pulang (status PULANG)
+  const pulangUniq = new Set(todayLog.filter(e => e.type === 'PULANG' && e.status === 'PULANG').map(e => e.id));
+  
+  document.getElementById('stat-hadir').textContent = datangUniq.size;
   document.getElementById('stat-total').textContent = faceDb.length;
-  document.getElementById('stat-scan').textContent = todayLog.length;
+  document.getElementById('stat-scan').textContent = pulangUniq.size; // Card "SUDAH PULANG"
 }
 
 function showToast(msg, type) {
