@@ -594,6 +594,19 @@
 .notif.pulang { background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%); border-left: 6px solid #D97706; }
 .notif.pulang #notif-name, .notif.pulang #notif-status, .notif.pulang #notif-time { color: #78350F; font-weight: 700; }
 
+/* ===== ABSENSI MANUAL MODAL ===== */
+.manual-modal { position: fixed; inset: 0; background: rgba(5,11,24,0.92); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 16px; }
+.manual-modal.show { display: flex; }
+.manual-modal-inner { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 24px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.manual-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.manual-modal-title { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; }
+.manual-modal-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 3px; }
+.btn-modal-close { background: transparent; border: 1px solid rgba(255,77,106,.3); color: var(--red); font-size: 16px; padding: 3px 9px; border-radius: 8px; cursor: pointer; transition: all .2s; line-height: 1; flex-shrink: 0; }
+.btn-modal-close:hover { background: rgba(255,77,106,.15); }
+.manual-info-bar { padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); font-size: 11px; font-family: var(--mono); color: var(--text2); line-height: 1.6; }
+.btn-manual-trigger { margin: 6px 16px 0; padding: 9px 0; background: transparent; border: 1px solid var(--border2); color: var(--text2); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; border-radius: var(--radius); cursor: pointer; transition: all .2s; }
+.btn-manual-trigger:hover { border-color: var(--accent); color: var(--accent); background: rgba(45,212,232,0.08); }
+
 </style>
 </head>
 <body>
@@ -648,6 +661,7 @@
               <button class="type-btn pulang" id="btn-type-pulang" onclick="setScanType('PULANG')">🟠 ABSEN PULANG</button>
             </div>
       <button class="btn-primary" id="btn-scan" onclick="toggleScan()" disabled>MULAI SCAN</button>
+      <button class="btn-manual-trigger" onclick="openManualModal()">✍️ ABSEN MANUAL</button>
       <div style="height:12px;"></div>
     </div>
 
@@ -858,6 +872,46 @@
         <span class="radius-val" id="map-radius-val">100 m</span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== ABSENSI MANUAL MODAL ===== -->
+<div class="manual-modal" id="manual-modal">
+  <div class="manual-modal-inner">
+    <div class="manual-modal-head">
+      <div>
+        <div class="manual-modal-title">✍️ ABSENSI MANUAL</div>
+        <div class="manual-modal-sub">Alternatif jika kamera atau GPS bermasalah</div>
+      </div>
+      <button class="btn-modal-close" onclick="closeManualModal()">✕</button>
+    </div>
+    <div class="scan-type-toggle" style="margin:0;">
+      <button class="type-btn active" id="manual-btn-datang" onclick="setManualType('DATANG')">🟢 ABSEN DATANG</button>
+      <button class="type-btn pulang" id="manual-btn-pulang" onclick="setManualType('PULANG')">🟠 ABSEN PULANG</button>
+    </div>
+    <div class="field" style="margin:0;">
+      <label>NAMA LENGKAP</label>
+      <input type="text" id="manual-name" list="manual-name-list" placeholder="Ketik atau pilih nama..." oninput="autoFillManualRole(this.value)" autocomplete="off">
+      <datalist id="manual-name-list"></datalist>
+    </div>
+    <div class="field" style="margin:0;">
+      <label>DIVISI</label>
+      <select id="manual-role">
+        <option value="" disabled selected>— Pilih Divisi —</option>
+        <option value="Stage Manager">Stage Manager</option>
+        <option value="Administrasi">Administrasi</option>
+        <option value="Pelayanan Penonton">Pelayanan Penonton</option>
+        <option value="Ticketing">Ticketing</option>
+        <option value="Keamanan">Keamanan</option>
+        <option value="Media">Media</option>
+        <option value="Runner">Runner</option>
+        <option value="Sobat Media Partner">Sobat Media Partner</option>
+        <option value="Liaison Office">Liaison Office</option>
+      </select>
+    </div>
+    <div class="manual-info-bar" id="manual-info-bar">Mengecek GPS...</div>
+    <button class="btn-primary" id="manual-submit-btn" style="margin:0;" onclick="submitManualAttendance()">✓ KIRIM ABSENSI</button>
+    <button class="btn-sec" onclick="closeManualModal()">BATAL</button>
   </div>
 </div>
 
@@ -1800,7 +1854,14 @@ async function runDetection() {
               if (existingLog) {
                 // Jika status sudah final (HADIR, TERLAMBAT, atau PULANG), tolak scan ulang
                 if (existingLog.status === 'HADIR' || existingLog.status === 'TERLAMBAT' || existingLog.status === 'PULANG') {
-                  return; 
+                  let alreadyInsideZone = null;
+                  if (geofence.centerLat !== null && !isNaN(geofence.centerLat) && zoneDist !== null) {
+                    alreadyInsideZone = zoneDist <= geofence.radiusM;
+                  }
+                  showAlreadyAbsenNotif(bestMatch.name, alreadyInsideZone);
+                  setStatus('warn', `⚠️ ${bestMatch.name} sudah absen hari ini.`);
+                  scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
+                  return;
                 }
 
               // 2. Jika sebelumnya TIDAK HADIR, cek apakah sekarang masih di luar zona?
@@ -1808,15 +1869,15 @@ async function runDetection() {
               if (geofence.centerLat !== null && !isNaN(geofence.centerLat) && zoneDist !== null) {
                 isInsideNow = zoneDist <= geofence.radiusM;
               }
-              
+
               // Jika masih di luar zona, status tidak berubah. Tampilkan duplikat dan stop.
               if (existingLog.status === 'TIDAK HADIR' && !isInsideNow) {
-                showDuplicateNotif(bestMatch.name, true);
+                showAlreadyAbsenNotif(bestMatch.name, false);
                 setStatus('warn', `⚠️ ${bestMatch.name} masih di luar area.`);
                 scanCooldown = true; setTimeout(() => { scanCooldown = false; }, 5000);
                 return;
               }
-              
+
               // 3. Jika lolos (misal: dari TIDAK HADIR sekarang masuk zona), izinkan recordAttendance berjalan.
             }
 
@@ -1951,7 +2012,8 @@ function showNotif(name, status, confidence, time) {
   n.className = notifClass;
   document.getElementById('notif-name').textContent = name;
   document.getElementById('notif-status').textContent = status;
-  document.getElementById('notif-time').textContent = formatTime(time) + ' · Confidence: ' + confidence + '%';
+  const confText = confidence === 'MANUAL' ? 'Input Manual' : `Confidence: ${confidence}%`;
+  document.getElementById('notif-time').textContent = formatTime(time) + ' · ' + confText;
   
   setTimeout(() => { n.classList.remove('show'); }, 4000);
 }
@@ -1987,7 +2049,7 @@ function showDuplicateNotif(name, isOutsideZone = false) {
   const n = document.getElementById('notif');
   n.className = 'notif show duplicate';
   document.getElementById('notif-name').textContent = name;
-  
+
   if (isOutsideZone) {
     document.getElementById('notif-status').textContent = 'SUDAH ABSEN (DI LUAR AREA)';
     document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Masuk ke zona untuk update status';
@@ -1995,7 +2057,26 @@ function showDuplicateNotif(name, isOutsideZone = false) {
     document.getElementById('notif-status').textContent = 'SUDAH ABSEN HARI INI';
     document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
   }
-  
+
+  setTimeout(() => { n.classList.remove('show'); }, 4000);
+}
+
+function showAlreadyAbsenNotif(name, insideZone = null) {
+  const n = document.getElementById('notif');
+  n.className = 'notif show duplicate';
+  document.getElementById('notif-name').textContent = name;
+
+  if (insideZone === null) {
+    document.getElementById('notif-status').textContent = `${name} sudah absen`;
+    document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
+  } else if (insideZone) {
+    document.getElementById('notif-status').textContent = `${name} sudah absen di dalam zona`;
+    document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Data tercatat di sistem';
+  } else {
+    document.getElementById('notif-status').textContent = `${name} sudah absen tetapi berada di luar zona`;
+    document.getElementById('notif-time').textContent = formatTime(new Date()) + ' · Masuk ke zona untuk update status';
+  }
+
   setTimeout(() => { n.classList.remove('show'); }, 4000);
 }
 
@@ -2120,7 +2201,7 @@ function renderLog() {
       <td style="color:var(--text3);">${e.role || '—'}</td>
       <td><span class="pill type ${typePill}">${e.type || 'DATANG'}</span></td>
       <td><span class="pill ${pillClass}">${e.status}</span></td>
-      <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text3);">${e.confidence}%</td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text3);">${e.confidence === 'MANUAL' ? 'MANUAL' : e.confidence + '%'}</td>
       <td>${locCell}</td>
     </tr>`;
   }).join('');
@@ -2163,7 +2244,151 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('map-modal').classList.contains('show')) {
     closeMapPicker();
   }
+  if (e.key === 'Escape' && document.getElementById('manual-modal').classList.contains('show')) {
+    closeManualModal();
+  }
 });
+
+// ─── Absensi Manual ──────────────────────────────────────────────────────────
+let manualScanType = 'DATANG';
+
+function setManualType(type) {
+  manualScanType = type;
+  document.getElementById('manual-btn-datang').classList.toggle('active', type === 'DATANG');
+  document.getElementById('manual-btn-pulang').classList.toggle('active', type === 'PULANG');
+}
+
+function autoFillManualRole(val) {
+  const found = faceDb.find(p => p.name.toLowerCase() === val.trim().toLowerCase());
+  if (found) document.getElementById('manual-role').value = found.role;
+}
+
+function openManualModal() {
+  const datalist = document.getElementById('manual-name-list');
+  datalist.innerHTML = faceDb.map(p => `<option value="${p.name}"></option>`).join('');
+  document.getElementById('manual-name').value = '';
+  document.getElementById('manual-role').selectedIndex = 0;
+  setManualType('DATANG');
+  updateManualInfoBar();
+  document.getElementById('manual-modal').classList.add('show');
+}
+
+function closeManualModal() {
+  document.getElementById('manual-modal').classList.remove('show');
+}
+
+function updateManualInfoBar() {
+  const el = document.getElementById('manual-info-bar');
+  if (!el) return;
+  if (!currentPos) {
+    el.textContent = '⚠️ GPS tidak tersedia — absensi tetap bisa dikirim, status menyesuaikan geofence.';
+    return;
+  }
+  if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+    const dist = Math.round(distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng));
+    const inside = dist <= geofence.radiusM;
+    const distTxt = dist < 1000 ? dist + 'm' : (dist / 1000).toFixed(1) + 'km';
+    el.textContent = `GPS ±${currentPos.accuracy}m · ${inside ? '✓ Dalam zona' : '✕ Luar zona'} (${distTxt} dari pusat)`;
+  } else {
+    el.textContent = `GPS ±${currentPos.accuracy}m · Geofence belum dikonfigurasi`;
+  }
+}
+
+async function submitManualAttendance() {
+  const nameInput = document.getElementById('manual-name').value.trim();
+  const roleVal = document.getElementById('manual-role').value;
+  if (!nameInput) { showToast('Nama wajib diisi!', 'error'); return; }
+  if (!roleVal) { showToast('Pilih divisi terlebih dahulu!', 'error'); return; }
+
+  const matched = faceDb.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+  const personId = matched ? matched.id : 'MANUAL-' + Date.now();
+  const personName = matched ? matched.name : nameInput;
+  const personRole = matched ? matched.role : roleVal;
+
+  const today = getLocalDate();
+  const existing = attendanceLog.find(log =>
+    (matched ? log.id === personId : log.name.toLowerCase() === nameInput.toLowerCase()) &&
+    log.date === today && log.type === manualScanType
+  );
+  if (existing && (existing.status === 'HADIR' || existing.status === 'TERLAMBAT' || existing.status === 'PULANG')) {
+    let insideZone = null;
+    if (currentPos && geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+      const dist = Math.round(distanceMeters(currentPos.lat, currentPos.lng, geofence.centerLat, geofence.centerLng));
+      insideZone = dist <= geofence.radiusM;
+    }
+    closeManualModal();
+    showAlreadyAbsenNotif(personName, insideZone);
+    return;
+  }
+
+  const submitBtn = document.getElementById('manual-submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Mengirim...';
+
+  try {
+    await refreshGPS();
+    const now = new Date();
+    const todayStr = getLocalDate(now);
+    let lat = null, lng = null, accuracy = null, distance = null, mapsLink = '';
+
+    if (currentPos) {
+      lat = currentPos.lat; lng = currentPos.lng; accuracy = currentPos.accuracy;
+      mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+      if (geofence.centerLat !== null && !isNaN(geofence.centerLat)) {
+        distance = Math.round(distanceMeters(lat, lng, geofence.centerLat, geofence.centerLng));
+      }
+    }
+
+    let isInsideZone = true;
+    if (geofence.centerLat !== null && !isNaN(geofence.centerLat) && distance !== null) {
+      const gpsUnreliable = accuracy !== null && accuracy > geofence.radiusM * 3;
+      isInsideZone = gpsUnreliable ? true : distance <= geofence.radiusM;
+    }
+
+    let finalStatus;
+    if (manualScanType === 'PULANG') {
+      finalStatus = isInsideZone ? 'PULANG' : 'TIDAK HADIR';
+    } else {
+      if (!isInsideZone) {
+        finalStatus = 'TIDAK HADIR';
+      } else if (geofence.deadline) {
+        const [h, m] = geofence.deadline.split(':').map(Number);
+        finalStatus = (now.getHours() * 60 + now.getMinutes()) > (h * 60 + m) ? 'TERLAMBAT' : 'HADIR';
+      } else {
+        finalStatus = 'HADIR';
+      }
+    }
+
+    const entry = {
+      name: personName, id: personId, role: personRole,
+      date: todayStr, time: formatTime(now), ts: Date.now(),
+      lat, lng, accuracy, distance, mapsLink,
+      confidence: 'MANUAL', type: manualScanType, status: finalStatus
+    };
+
+    attendanceLog.unshift({ ...entry });
+    localStorage.setItem('attlog', JSON.stringify(attendanceLog.slice(0, 500)));
+    renderLog(); updateStats();
+
+    const serverResponse = await sendToSheets(entry);
+    closeManualModal();
+
+    if (serverResponse && serverResponse.action === 'spam_ignored') {
+      showSpamNotif(personName);
+    } else if (manualScanType === 'PULANG') {
+      finalStatus === 'PULANG' ? showPulangNotif(personName) : showNotif(personName, finalStatus, 'MANUAL', now);
+    } else {
+      finalStatus === 'TERLAMBAT' ? showLateNotif(personName, finalStatus) : showNotif(personName, finalStatus, 'MANUAL', now);
+    }
+
+    setTimeout(() => refreshAttendance(), 1500);
+  } catch(e) {
+    showToast('Gagal mengirim: ' + e.message, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✓ KIRIM ABSENSI';
+  }
+}
 </script>
 </body>
 </html>
